@@ -3,45 +3,18 @@ export class EffectTransfer{
     static NAME = "EffectTransfer";
     
 
-    
-    //https://github.com/trioderegion/dnd5e-helpers/blob/c778f0186b3263f87fd3714acb92ce25953af05e/scripts/modules/ActionManagement.js#L206
+    // Code is heavily inspired by https://github.com/trioderegion/dnd5e-helpers/blob/c778f0186b3263f87fd3714acb92ce25953af05e/scripts/modules/ActionManagement.js#L206
 
-
-    static async debug(x,active){ // Toggleable console.log()
+    // Toggleable console.log()
+    static async debug(x,active){ 
         if (active){
             console.log(x)
         }
     }
 
-    /*
-    // All the owner testing is copied from 5e helpers. Refer to their license
-    function isFirstOwner(doc){
-        return game.user.id === firstOwner(doc).id;
-    }
-    */
-
-    /*  
-    function  firstOwner(doc){
-        // null docs could mean an empty lookup, null docs are not owned by anyone 
-        if (!doc) return false;
-
-        const playerOwners = Object.entries(doc.data.permission)
-        .filter(([id, level]) => (!game.users.get(id)?.isGM && game.users.get(id)?.active) && level === 3)
-        .map(([id, level])=> id);
-
-        if(playerOwners.length > 0) {
-        return game.users.get(playerOwners[0]);
-        }
-
-        // if no online player owns this actor, fall back to first GM 
-        return game.users.find(u => u.isGM && u.active);
-    }
-    */
-
-
-    // Heavily inspired/stolen from 5e helpers ActionManagement
+    // gets the actor, item and token from the chat message, pops up the dialogue and calls warpgate to apply effects
     static async effectTransferDialogue(messageDocument){
-        const bug= true
+        const bug= true //toggleable option to enable/disable debug()
         
         const messageData=messageDocument.data //Get the relevant part from messageDocument
         const speaker = messageData.speaker; // Get the speaker of the message (ergo the actor this rolled from)

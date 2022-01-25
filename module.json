@@ -1,8 +1,8 @@
 {
     "name": "effective-transferral",
     "title": "Effective Transferral",
-    "description": "A simple module to transfer effects for the DjD5e game system.",
-    "system": [],
+    "description": "A simple module to transfer effects from items to actors for the DnD5e game system.",
+    "system": ["dnd5e"],
     "version": "1.0.0",
     "author": "",
     "authors": [
@@ -12,6 +12,12 @@
     ],
     "languages": [
     ],
+	 "dependencies": [
+    {
+      "name": "warpgate",
+      "manifest": "https://github.com/trioderegion/warpgate/releases/latest/download/module.json"
+    }
+	],
     "styles": [
     ],
     "socket": false,
