@@ -85,25 +85,25 @@ export class EffectTransfer{
             inputs: [{
                 label: `<center>
                     <p style="font-size:15px;"> 
-                    ${game.i18n.localize("ET.effectTransferDialogue.instructions")}
+                    ${game.i18n.localize("ET.Dialog.Instructions.Token")}
                     </p>  
                     </center>`,
                 type: 'info'
             }],
             buttons: [{
-                label: 'Self',
+                label: `${game.i18n.localize("ET.Dialog.Button.Self")}`,
                 value: "selfToken"
             }, {
-                label: 'Targets',
+                label: `${game.i18n.localize("ET.Dialog.Button.Targets")}`,
                 value: "targets"
             }, {
-                label: 'None',
+                label: `${game.i18n.localize("ET.Dialog.Button.None")}`,
                 value: "none"
             }]
             
             },
             {
-            title: 'Effect Application',
+            title: `${game.i18n.localize("ET.Dialog.Title")}`,
             })
         }else{
             /* if we don't have a token we are either non on a scene or not on a scene that uses tokens (Theatre of Mind) so there wouldn't be anything to target anyhow*/
@@ -111,22 +111,22 @@ export class EffectTransfer{
             inputs: [{
                 label: `<center>
                     <p style="font-size:15px;">  
-                    Choose which actors to apply the effect to.<br>Remember to target the tokens first should you choose the Targets option.
+                    ${game.i18n.localize("ET.Dialog.Instructions.Notoken")}
                     </p>  
                     </center>`,
                 type: 'info'
             }],
             buttons: [{
-                label: 'Self',
+                label: `${game.i18n.localize("ET.Dialog.Button.Self")}`,
                 value: "selfNoToken"
             },{
-                label: 'None',
+                label: `${game.i18n.localize("ET.Dialog.Button.None")}`,
                 value: "none"
             }]
             
             },
             {
-            title: 'Effect Application',
+            title: `${game.i18n.localize("ET.Dialog.Title")}`,
             }) 
         }
         effect_target=effect_target["buttons"]// Get the relevant part from the dialogue return value
@@ -159,7 +159,8 @@ export class EffectTransfer{
             updates,
             {},
             {name:`${item.data.name}`,
-            description:`${game.user.name} is applying effects from ${item.data.name} to ${token.data.name}`,
+            description: game.i18n.format("ET.Dialog.Mutate.Description",{userName:game.user.name,itemName:item.data.name,tokenName:token.data.name}),
+            //`${game.user.name} is applying effects from ${item.data.name} to ${token.data.name}`
             comparisonKeys: {ActiveEffect: 'label'}
             })
 
@@ -178,14 +179,14 @@ export class EffectTransfer{
                 updates,
                 {},
                 {name:`${item.data.name}`,
-                description:`${game.user.name} is applying effects from ${item.data.name} to ${target.document.data.name}`,
+                description: game.i18n.format("ET.Dialog.Mutate.Description",{userName:game.user.name,itemName:item.data.name,tokenName:token.data.name}),
                 comparisonKeys: {ActiveEffect: 'label'}
                 })
             }
             // code
             break;
         default:
-            ui.Notifications.error("The switch case statement fell through something went wrong. Notify the author.")
+            ui.Notifications.error(`${game.i18n.localize("ET.Dialog.switch.error")}`)
             return
             break;
         
