@@ -14,7 +14,7 @@ export class EffectTransfer{
 
     // gets the actor, item and token from the chat message, pops up the dialogue and calls warpgate to apply effects
     static async effectTransferDialogue(messageDocument){
-        const bug= true //toggleable option to enable/disable debug()
+        const bug= false //toggleable option to enable/disable debug()
         
         const messageData=messageDocument.data //Get the relevant part from messageDocument
         const speaker = messageData.speaker; // Get the speaker of the message (ergo the actor this rolled from)
