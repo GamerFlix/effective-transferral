@@ -74,7 +74,7 @@ export class EffectTransfer{
         EffectTransfer.debug(non_transfer_effects,bug)
         
         // If we don't have any non-transfer effects there is nothing to do so exit
-        if (non_transfer_effects.size===0) return
+        if (non_transfer_effects.length===0) return
         let effect_target // initiliaze the variable again because scoping
         
         
