@@ -2,7 +2,7 @@
 /**
  * Main Module Organizational Tools
  */
-//import { MyLogger } from './my-logger.js';
+import { EffectTransfer } from "./modules/effect-transfer.mjs";
 
 /**
  * Sub Modules
@@ -17,6 +17,7 @@
 const SUB_MODULES = {
   //MyLogger,
   //MyClass
+  EffectTransfer
 };
 
 const SUB_APPS = {
@@ -26,6 +27,14 @@ const SUB_APPS = {
 /*
   Initialize Module
 */
+
+export class MODULE {
+
+  static build() {
+    //all startup tasks needed before sub module initialization
+  }
+}
+
 MODULE.build();
 
 /*
@@ -40,12 +49,7 @@ Hooks.on(`setup`, () => {
   //Object.entries(SUB_APPS).forEach(([key, cl])=> window[key] = cl);
 });
 
-export class MODULE {
 
-  static build() {
-    //all startup tasks needed before sub module initialization
-  }
-}
 
 /*****Example Sub-Module Class******
 

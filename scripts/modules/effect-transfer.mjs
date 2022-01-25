@@ -1,0 +1,227 @@
+export class EffectTransfer{
+
+    static NAME = "EffectTransfer";
+    
+
+    
+    //https://github.com/trioderegion/dnd5e-helpers/blob/c778f0186b3263f87fd3714acb92ce25953af05e/scripts/modules/ActionManagement.js#L206
+
+
+    static async debug(x,active){ // Toggleable console.log()
+        if (active){
+            console.log(x)
+        }
+    }
+
+    /*
+    // All the owner testing is copied from 5e helpers. Refer to their license
+    function isFirstOwner(doc){
+        return game.user.id === firstOwner(doc).id;
+    }
+    */
+
+    /*  
+    function  firstOwner(doc){
+        // null docs could mean an empty lookup, null docs are not owned by anyone 
+        if (!doc) return false;
+
+        const playerOwners = Object.entries(doc.data.permission)
+        .filter(([id, level]) => (!game.users.get(id)?.isGM && game.users.get(id)?.active) && level === 3)
+        .map(([id, level])=> id);
+
+        if(playerOwners.length > 0) {
+        return game.users.get(playerOwners[0]);
+        }
+
+        // if no online player owns this actor, fall back to first GM 
+        return game.users.find(u => u.isGM && u.active);
+    }
+    */
+
+
+    // Heavily inspired/stolen from 5e helpers ActionManagement
+    static async effectTransferDialogue(messageDocument){
+        const bug= true
+        
+        const messageData=messageDocument.data //Get the relevant part from messageDocument
+        const speaker = messageData.speaker; // Get the speaker of the message (ergo the actor this rolled from)
+        
+        /*Is there a speaker, is the speaker on the scene, does the speaker have a token*/
+        if(!speaker || !speaker.scene /*|| !speaker.token*/)  return;
+        /*Initialize actor and token*/
+        let actor
+        let token
+        
+        if (speaker.token){ //If the speaker has a token use that (to support unlined actors)
+            token = await fromUuid(`Scene.${speaker.scene}.Token.${speaker.token}`);// Get the token fromUuid
+            EffectTransfer.debug(token,bug)
+            actor=token.actor // Define the actor as the token.actor (again support for unlinked actors)
+            EffectTransfer.debug("Effect buttons: Token Found",bug)
+            EffectTransfer.debug(actor,bug)
+        }else{ //If the speaker doesn't have a token, just get the actor
+            actor=await fromUuid(`Actor.${speaker.actor}`)// Just get the actor fromUuid if we don't have a token
+            EffectTransfer.debug("Token not found in Message",bug)
+            EffectTransfer.debug(actor,bug)
+            token=actor.getActiveTokens({document:true})[0]// get the token from the actor
+        }
+
+        
+        let item_id = ''; // preinitilize the id
+        try{
+        item_id = $(messageData.content).attr("data-item-id"); // try to get the item id out of the message
+        }catch(e){ 
+        // If we couldn't get an item from the message, the message wasn't created via item.roll
+        EffectTransfer.debug("Couldn't find the item",bug)
+        return;
+        }
+        EffectTransfer.debug(item_id,bug)
+        //console.log(messageDocument.user)
+        //console.log(game.user)
+        
+        if(!item_id ||!actor|| messageDocument.user.id!==game.user.id) return;
+        /*
+        Is item_id defined, did we find an actor, is the current user the actors first owner?
+        We check for the current user because otherwise everyone, not just the one who rolled the thing would get a popup window. Not good
+        */
+        
+        const item = actor.items.get(item_id);// get the item via id
+
+        
+        EffectTransfer.debug(item,bug)
+        
+        //predefining again because scoping is a bitch
+        let non_transfer_effects
+        if (item.effects.size>0){//Check whether we actually have effects on the item
+            // If we do have effects get the non-transfer ones since we only want to move those
+            non_transfer_effects=item.effects.filter(e=>e.data.transfer===false)
+        }else{
+            return //If we don't have any there's nothing to do
+        }
+        EffectTransfer.debug(item.effects,bug)
+        EffectTransfer.debug(non_transfer_effects,bug)
+        
+        // If we don't have any non-transfer effects there is nothing to do so exit
+        if (non_transfer_effects.size===0) return
+        let effect_target // initiliaze the variable again because scoping
+        
+        
+        /* If we have a token we are on a scene that uses tokens so we have stuff to target.
+        Reflect that in the dialogue by giving the option to apply to targets*/
+        if (token){
+        effect_target=await warpgate.menu({
+            inputs: [{
+                label: `<center>
+                    <p style="font-size:15px;">  
+                    Choose which actors to apply the effect to.<br>Remember to target the tokens first should you choose the Targets option.
+                    </p>  
+                    </center>`,
+                type: 'info'
+            }],
+            buttons: [{
+                label: 'Self',
+                value: "selfToken"
+            }, {
+                label: 'Targets',
+                value: "targets"
+            }, {
+                label: 'None',
+                value: "none"
+            }]
+            
+            },
+            {
+            title: 'Effect Application',
+            })
+        }else{
+            /* if we don't have a token we are either non on a scene or not on a scene that uses tokens (Theatre of Mind) so there wouldn't be anything to target anyhow*/
+            effect_target=await warpgate.menu({
+            inputs: [{
+                label: `<center>
+                    <p style="font-size:15px;">  
+                    Choose which actors to apply the effect to.<br>Remember to target the tokens first should you choose the Targets option.
+                    </p>  
+                    </center>`,
+                type: 'info'
+            }],
+            buttons: [{
+                label: 'Self',
+                value: "selfNoToken"
+            },{
+                label: 'None',
+                value: "none"
+            }]
+            
+            },
+            {
+            title: 'Effect Application',
+            }) 
+        }
+        effect_target=effect_target["buttons"]// Get the relevant part from the dialogue return value
+        EffectTransfer.debug(effect_target,bug)
+        if (effect_target==="none"||!effect_target) return // If we selected to do nothing do nothing!
+        
+        // Reformat our active effects so we can pass them to warpgate later
+        EffectTransfer.debug(non_transfer_effects,bug)
+        
+        /*Bring effects into usable form*/
+        const aeData = non_transfer_effects.reduce( (acc, ae) => {
+        acc[ae.data.label] = ae.toObject()
+        return acc;
+        }, {});
+        EffectTransfer.debug("Prepared aeData",bug)
+        /*Put effects into update object*/
+        const updates={
+        embedded: {ActiveEffect: aeData}
+        }
+        EffectTransfer.debug("Prepared updates",bug)
+        
+        EffectTransfer.debug("Going into the switch case",bug)
+        switch (effect_target){
+        case 'selfToken':// For some reason token is actually token.document so we remove it from here
+            EffectTransfer.debug("Going into selfToken",bug)
+            EffectTransfer.debug(item,bug)
+            EffectTransfer.debug(token,bug)
+            /*If the user selected self and we found a token we can just call warpgate.mutate on the token*/
+            warpgate.mutate(token,
+            updates,
+            {},
+            {name:`${item.data.name}`,
+            description:`${game.user.name} is applying effects from ${item.data.name} to ${token.data.name}`,
+            comparisonKeys: {ActiveEffect: 'label'}
+            })
+
+            break;
+        case 'selfNoToken': 
+            EffectTransfer.debug("Going into selfNoToken",bug)
+            EffectTransfer.debug(token,bug)
+            /*If we didn't find any tokens just create the effects as usual and have the user deal with the extra inconvenience of reverting the change*/
+            await actor.createEmbeddedDocuments("ActiveEffect",non_transfer_effects.map(i => i.data))
+            break;
+        case 'targets':// If we selected targets option we need to put the effects on targets
+            EffectTransfer.debug(game.user.targets,bug)
+            /*Loop over each target and apply the effect via warpgate*/
+            for (let target of game.user.targets){
+                warpgate.mutate(target.document,
+                updates,
+                {},
+                {name:`${item.data.name}`,
+                description:`${game.user.name} is applying effects from ${item.data.name} to ${target.document.data.name}`,
+                comparisonKeys: {ActiveEffect: 'label'}
+                })
+            }
+            // code
+            break;
+        default:
+            ui.Notifications.error("The switch case statement fell through something went wrong. Notify the author.")
+            return
+            break;
+        
+        }
+    }
+
+    static register(){
+        Hooks.on("createChatMessage",EffectTransfer.effectTransferDialogue)
+    }
+
+
+}

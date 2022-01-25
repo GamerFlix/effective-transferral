@@ -1,7 +1,7 @@
 {
-    "name": "fvtt-dual-track-module",
-    "title": "FVTT Dual-Track Module Template",
-    "description": "A template repository.",
+    "name": "effective-transferral",
+    "title": "Effective Transferral",
+    "description": "A simple module to transfer effects for the DjD5e game system.",
     "system": [],
     "version": "1.0.0",
     "author": "",
