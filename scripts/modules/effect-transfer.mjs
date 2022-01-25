@@ -84,8 +84,8 @@ export class EffectTransfer{
         effect_target=await warpgate.menu({
             inputs: [{
                 label: `<center>
-                    <p style="font-size:15px;">  
-                    Choose which actors to apply the effect to.<br>Remember to target the tokens first should you choose the Targets option.
+                    <p style="font-size:15px;"> 
+                    ${game.i18n.localize("ET.effectTransferDialogue.instructions")}
                     </p>  
                     </center>`,
                 type: 'info'
