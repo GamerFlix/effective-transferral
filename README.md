@@ -4,7 +4,7 @@ This module requires you to have the [Warp Gate](https://github.com/trioderegion
 
 Last known working version of Warp Gate is [1.13.5](https://github.com/trioderegion/warpgate/releases/tag/1.13.5)
 
-https://user-images.githubusercontent.com/62909799/151082783-45ea888f-05c6-4ca8-9e9c-664755281e74.mp4
+https://user-images.githubusercontent.com/62909799/151082890-08d28574-846a-4969-bbad-fd684329821a.mp4
 
 ## Instructions
 After installing the module and its dependency [Warp Gate](https://github.com/trioderegion/warpgate) you will receive a dialogue whenever you roll an item that has an active effect on it that has been set to "not transfer on item equip" (see the picture below).
