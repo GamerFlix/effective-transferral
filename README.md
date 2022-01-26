@@ -22,3 +22,6 @@ Since (in most cases see below for exceptions) the effect is applied using Warp 
 ![Effective_Transferral_Revert](https://user-images.githubusercontent.com/62909799/151084420-76fdfb47-385f-4755-9e2f-23ac9599d926.jpg)
 
 In the case that an effect is being applied to an actor while that actor does not have any tokens on the current scene, the effect will be applied using Foundry’s core API. Effects applied in this way will have to be manually removed from the effects tab should one wish to remove them. The revert feature does not work for effects applied in this way as they are not handled by [Warp Gate’s documentation](https://github.com/trioderegion/warpgate#mutation-commands).
+
+##Credits
+A big thank you to honeybadger aka @trioderegion for creating [Warp Gate](https://github.com/trioderegion/warpgate), talking me through the process of setting this repository and module up aswell as providing an easy to use [template]https://github.com/trioderegion/fvtt-dual-track-module. This would likely have never been published without his help
