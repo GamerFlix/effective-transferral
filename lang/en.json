@@ -7,7 +7,7 @@
     "ET.Dialog.Title":"Effect Application",
     "ET.Dialog.Mutate.Description":"{userName} is applying effects from {itemName} to {tokenName}",
     "ET.Dialog.switch.error":"The switch case statement fell through something went wrong. Notify the author.",
-    "Et.Button.Label":"Transfer Effect"
+    "Et.Button.Label":"Transfer Effects"
 
 
 
