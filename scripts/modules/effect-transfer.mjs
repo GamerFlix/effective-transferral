@@ -31,7 +31,7 @@ export class EffectTransfer{
 
 
     // pops up the dialogue and calls warpgate to apply effects
-    static async effectTransferDialogue(actor,token,item){
+    static async effectTransferDialogue(actor,tokenDoc,item){
         const bug= false //toggleable option to enable/disable debug()
         
         EffectTransfer.debug(item,bug)
@@ -54,7 +54,7 @@ export class EffectTransfer{
         
         /* If we have a token we are on a scene that uses tokens so we have stuff to target.
         Reflect that in the dialogue by giving the option to apply to targets*/
-        if (token){
+        if (tokenDoc){
         effect_target=await warpgate.menu({
             inputs: [{
                 label: `<center>
@@ -124,16 +124,16 @@ export class EffectTransfer{
         
         EffectTransfer.debug("Going into the switch case",bug)
         switch (effect_target){
-        case 'selfToken':// For some reason token is actually token.document so we remove it from here
+        case 'selfToken':
             EffectTransfer.debug("Going into selfToken",bug)
             EffectTransfer.debug(item,bug)
-            EffectTransfer.debug(token,bug)
+            EffectTransfer.debug(tokenDoc,bug)
             /*If the user selected self and we found a token we can just call warpgate.mutate on the token*/
-            warpgate.mutate(token,
+            warpgate.mutate(tokenDoc,
             updates,
             {},
             {name:`${item.data.name}`,
-            description: game.i18n.format("ET.Dialog.Mutate.Description",{userName:game.user.name,itemName:item.data.name,tokenName:token.data.name}),
+            description: game.i18n.format("ET.Dialog.Mutate.Description",{userName:game.user.name,itemName:item.data.name,tokenName:tokenDoc.data.name}),
             //`${game.user.name} is applying effects from ${item.data.name} to ${token.data.name}`
             comparisonKeys: {ActiveEffect: 'label'}
             })
@@ -141,7 +141,7 @@ export class EffectTransfer{
             break;
         case 'selfNoToken': 
             EffectTransfer.debug("Going into selfNoToken",bug)
-            EffectTransfer.debug(token,bug)
+            EffectTransfer.debug(tokenDoc,bug)
             /*If we didn't find any tokens just create the effects as usual and have the user deal with the extra inconvenience of reverting the change*/
             await actor.createEmbeddedDocuments("ActiveEffect",non_transfer_effects.map(i => i.data))
             break;
@@ -153,7 +153,7 @@ export class EffectTransfer{
                 updates,
                 {},
                 {name:`${item.data.name}`,
-                description: game.i18n.format("ET.Dialog.Mutate.Description",{userName:game.user.name,itemName:item.data.name,tokenName:token.data.name}),
+                description: game.i18n.format("ET.Dialog.Mutate.Description",{userName:game.user.name,itemName:item.data.name,tokenName:tokenDoc.data.name}),
                 comparisonKeys: {ActiveEffect: 'label'}
                 })
             }
@@ -169,7 +169,7 @@ export class EffectTransfer{
 
     // gets the actor, item and token from the chat message, and passes it to EffectTransferDialogue
     static async parseChatMessage(messageDocument){
-        const bug=false;
+        const bug=true;
         
         const messageData=messageDocument.data //Get the relevant part from messageDocument
         const speaker = messageData.speaker; // Get the speaker of the message (ergo the actor this rolled from)
@@ -178,19 +178,19 @@ export class EffectTransfer{
         if(!speaker || !speaker.scene /*|| !speaker.token*/)  return;
         /*Initialize actor and token*/
         let actor
-        let token
+        let tokenDoc
         
         if (speaker.token){ //If the speaker has a token use that (to support unlined actors)
-            token = await fromUuid(`Scene.${speaker.scene}.Token.${speaker.token}`);// Get the token fromUuid
-            EffectTransfer.debug(token,bug)
-            actor=token.actor // Define the actor as the token.actor (again support for unlinked actors)
-            EffectTransfer.debug("Effect buttons: Token Found",bug)
+            tokenDoc = await fromUuid(`Scene.${speaker.scene}.Token.${speaker.token}`);// Get the tokenDoc fromUuid
+            EffectTransfer.debug(tokenDoc,bug)
+            actor=tokenDoc.actor // Define the actor as the token.actor (again support for unlinked actors)
+            EffectTransfer.debug("Effect buttons: TokenDoc Found",bug)
             EffectTransfer.debug(actor,bug)
         }else{ //If the speaker doesn't have a token, just get the actor
             actor=await fromUuid(`Actor.${speaker.actor}`)// Just get the actor fromUuid if we don't have a token
-            EffectTransfer.debug("Token not found in Message",bug)
+            EffectTransfer.debug("TokenDoc not found in Message",bug)
             EffectTransfer.debug(actor,bug)
-            token=actor.getActiveTokens({document:true})[0]// get the token from the actor
+            tokenDoc=actor.getActiveTokens({document:true})[0]?.document// get the tokenDoc from the actors active tokens. For some reason it returns the token despite being passed document
         }
 
         
@@ -213,29 +213,34 @@ export class EffectTransfer{
         */
         
         const item = actor.items.get(item_id);// get the item via id
-        await EffectTransfer.effectTransferDialogue(actor,token,item) // Unsure whether I need to await this tbh
+        await EffectTransfer.effectTransferDialogue(actor,tokenDoc,item) // Unsure whether I need to await this tbh
     }
 
     static async EffectTransferTrigger(item){
-        console.log(item)
+        const bug=true
+        EffectTransfer.debug(item,bug)
         const actor=item.parent
         
         // ?? "use this value unless its null/undefined, then default to this value"
         // In the case of a linked token actor.token is null. For unlinked it's the relevant token -> actor.token for unlinked, first token on the canvas for linked
-        const token = actor.token ?? actor.getActiveTokens({document:true})[0] 
-
-        await EffectTransfer.effectTransferDialogue(actor,token,item) // Unsure whether I need to await this tbh
+        const tokenDoc = actor.token?.document ?? actor.getActiveTokens({document:true})[0]?.document // even though I pass document:true it returns a token dunno why
+        EffectTransfer.debug("TokenDoc gotten from item:",bug)
+        EffectTransfer.debug(tokenDoc,bug)
+        await EffectTransfer.effectTransferDialogue(actor,tokenDoc,item) // Unsure whether I need to await this tbh
     }
 
-    
+    // Add the effect transfer button to the item sheet if the item has a non-transfer effect
     static async EffectTransferButton(app,array){
-        const transferButton={
-            class:"EffectTransfer",
-            icon:"fas fa-exchange-alt",
-            label:"Transfer Effect",
-            onclick: () => EffectTransfer.EffectTransferTrigger(app.object)
+        // Only add a button if the item has non-transfer effects
+        if (app.object.effects.filter(e=>e.data.transfer===false).length>0){
+            const transferButton={
+                class:"EffectTransfer",
+                icon:"fas fa-exchange-alt", //https://fontawesome.com/v5.15/icons
+                label:"Transfer Effect",
+                onclick: () => EffectTransfer.EffectTransferTrigger(app.object)
+                }
+            array.unshift(transferButton)
         }
-        array.unshift(transferButton)
     }
 
     static register(){
