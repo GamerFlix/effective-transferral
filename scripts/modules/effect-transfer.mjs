@@ -169,7 +169,7 @@ export class EffectTransfer{
 
     // gets the actor, item and token from the chat message, and passes it to EffectTransferDialogue
     static async parseChatMessage(messageDocument){
-        const bug=true;
+        const bug=false;
         
         const messageData=messageDocument.data //Get the relevant part from messageDocument
         const speaker = messageData.speaker; // Get the speaker of the message (ergo the actor this rolled from)
@@ -217,7 +217,7 @@ export class EffectTransfer{
     }
 
     static async EffectTransferTrigger(item){
-        const bug=true
+        const bug=false
         EffectTransfer.debug(item,bug)
         const actor=item.parent
         
@@ -236,7 +236,7 @@ export class EffectTransfer{
             const transferButton={
                 class:"EffectTransfer",
                 icon:"fas fa-exchange-alt", //https://fontawesome.com/v5.15/icons
-                label:"Transfer Effect",
+                label:`${game.i18n.localize("Et.Button.Label")}`,
                 onclick: () => EffectTransfer.EffectTransferTrigger(app.object)
                 }
             array.unshift(transferButton)

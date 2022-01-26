@@ -3,7 +3,7 @@
     "title": "Effective Transferral",
     "description": "A simple module to transfer effects from items to actors for the DnD5e game system.",
     "system": ["dnd5e"],
-    "version": "1.0.0",
+    "version": "1.0.1",
     "author": "",
     "authors": [
     ],
