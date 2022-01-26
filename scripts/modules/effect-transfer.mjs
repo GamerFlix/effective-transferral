@@ -29,53 +29,10 @@ export class EffectTransfer{
         }
     }
 
-    // gets the actor, item and token from the chat message, pops up the dialogue and calls warpgate to apply effects
-    static async effectTransferDialogue(messageDocument){
+
+    // pops up the dialogue and calls warpgate to apply effects
+    static async effectTransferDialogue(actor,token,item){
         const bug= false //toggleable option to enable/disable debug()
-        
-        const messageData=messageDocument.data //Get the relevant part from messageDocument
-        const speaker = messageData.speaker; // Get the speaker of the message (ergo the actor this rolled from)
-        
-        /*Is there a speaker, is the speaker on the scene, does the speaker have a token*/
-        if(!speaker || !speaker.scene /*|| !speaker.token*/)  return;
-        /*Initialize actor and token*/
-        let actor
-        let token
-        
-        if (speaker.token){ //If the speaker has a token use that (to support unlined actors)
-            token = await fromUuid(`Scene.${speaker.scene}.Token.${speaker.token}`);// Get the token fromUuid
-            EffectTransfer.debug(token,bug)
-            actor=token.actor // Define the actor as the token.actor (again support for unlinked actors)
-            EffectTransfer.debug("Effect buttons: Token Found",bug)
-            EffectTransfer.debug(actor,bug)
-        }else{ //If the speaker doesn't have a token, just get the actor
-            actor=await fromUuid(`Actor.${speaker.actor}`)// Just get the actor fromUuid if we don't have a token
-            EffectTransfer.debug("Token not found in Message",bug)
-            EffectTransfer.debug(actor,bug)
-            token=actor.getActiveTokens({document:true})[0]// get the token from the actor
-        }
-
-        
-        let item_id = ''; // preinitilize the id
-        try{
-        item_id = $(messageData.content).attr("data-item-id"); // try to get the item id out of the message
-        }catch(e){ 
-        // If we couldn't get an item from the message, the message wasn't created via item.roll
-        EffectTransfer.debug("Couldn't find the item",bug)
-        return;
-        }
-        EffectTransfer.debug(item_id,bug)
-        //console.log(messageDocument.user)
-        //console.log(game.user)
-        
-        if(!item_id ||!actor|| messageDocument.user.id!==game.user.id) return;
-        /*
-        Is item_id defined, did we find an actor, is the current user the actors first owner?
-        We check for the current user because otherwise everyone, not just the one who rolled the thing would get a popup window. Not good
-        */
-        
-        const item = actor.items.get(item_id);// get the item via id
-
         
         EffectTransfer.debug(item,bug)
         
@@ -210,8 +167,80 @@ export class EffectTransfer{
         }
     }
 
+    // gets the actor, item and token from the chat message, and passes it to EffectTransferDialogue
+    static async parseChatMessage(messageDocument){
+        const bug=false;
+        
+        const messageData=messageDocument.data //Get the relevant part from messageDocument
+        const speaker = messageData.speaker; // Get the speaker of the message (ergo the actor this rolled from)
+        
+        /*Is there a speaker, is the speaker on the scene, does the speaker have a token*/
+        if(!speaker || !speaker.scene /*|| !speaker.token*/)  return;
+        /*Initialize actor and token*/
+        let actor
+        let token
+        
+        if (speaker.token){ //If the speaker has a token use that (to support unlined actors)
+            token = await fromUuid(`Scene.${speaker.scene}.Token.${speaker.token}`);// Get the token fromUuid
+            EffectTransfer.debug(token,bug)
+            actor=token.actor // Define the actor as the token.actor (again support for unlinked actors)
+            EffectTransfer.debug("Effect buttons: Token Found",bug)
+            EffectTransfer.debug(actor,bug)
+        }else{ //If the speaker doesn't have a token, just get the actor
+            actor=await fromUuid(`Actor.${speaker.actor}`)// Just get the actor fromUuid if we don't have a token
+            EffectTransfer.debug("Token not found in Message",bug)
+            EffectTransfer.debug(actor,bug)
+            token=actor.getActiveTokens({document:true})[0]// get the token from the actor
+        }
+
+        
+        let item_id = ''; // preinitilize the id
+        try{
+        item_id = $(messageData.content).attr("data-item-id"); // try to get the item id out of the message
+        }catch(e){ 
+        // If we couldn't get an item from the message, the message wasn't created via item.roll
+        EffectTransfer.debug("Couldn't find the item",bug)
+        return;
+        }
+        EffectTransfer.debug(item_id,bug)
+        //console.log(messageDocument.user)
+        //console.log(game.user)
+        
+        if(!item_id ||!actor|| messageDocument.user.id!==game.user.id) return;
+        /*
+        Is item_id defined, did we find an actor, is the current user the actors first owner?
+        We check for the current user because otherwise everyone, not just the one who rolled the thing would get a popup window. Not good
+        */
+        
+        const item = actor.items.get(item_id);// get the item via id
+        await EffectTransfer.effectTransferDialogue(actor,token,item) // Unsure whether I need to await this tbh
+    }
+
+    static async EffectTransferTrigger(item){
+        console.log(item)
+        const actor=item.parent
+        
+        // ?? "use this value unless its null/undefined, then default to this value"
+        // In the case of a linked token actor.token is null. For unlinked it's the relevant token -> actor.token for unlinked, first token on the canvas for linked
+        const token = actor.token ?? actor.getActiveTokens({document:true})[0] 
+
+        await EffectTransfer.effectTransferDialogue(actor,token,item) // Unsure whether I need to await this tbh
+    }
+
+    
+    static async EffectTransferButton(app,array){
+        const transferButton={
+            class:"EffectTransfer",
+            icon:"fas fa-exchange-alt",
+            label:"Transfer Effect",
+            onclick: () => EffectTransfer.EffectTransferTrigger(app.object)
+        }
+        array.unshift(transferButton)
+    }
+
     static register(){
-        Hooks.on("createChatMessage",EffectTransfer.effectTransferDialogue)
+        Hooks.on("createChatMessage",EffectTransfer.parseChatMessage)
+        Hooks.on("getItemSheetHeaderButtons",EffectTransfer.EffectTransferButton)
     }
 
 
