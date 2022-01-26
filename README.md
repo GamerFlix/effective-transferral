@@ -16,7 +16,6 @@ The dialogue will let you choose whether you want to apply the effects to yourse
 ![Effective_Transferral_Dialogue](https://user-images.githubusercontent.com/62909799/151084404-b5dac31a-8c9e-4d1c-bec2-803a32242a0d.jpg)
 
 Depending on their [Warp Gate](https://github.com/trioderegion/warpgate) settings the GM may get a popup asking them to confirm the application. GMs that trust their players can set this prompt to automatically confirm in their [Warp Gate](https://github.com/trioderegion/warpgate) module settings. Effective Transferral does not come with any settings itself, though addition of an option for this independent of Warp Gate’s settings might be explored in the future.
-POPUP AND SETTING PICTURE HERE
 Since (in most cases see below for exceptions) the effect is applied using Warp Gate's mutate system the application can be easily reverted by clicking the revert button on the top of the sheet. Shift clicking will allow you to select which “mutation” to revert. Refer to [Warp Gate’s documentation](https://github.com/trioderegion/warpgate#mutation-commands) for further information on this feature.
 
 ![Effective_Transferral_Revert](https://user-images.githubusercontent.com/62909799/151084420-76fdfb47-385f-4755-9e2f-23ac9599d926.jpg)
