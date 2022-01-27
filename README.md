@@ -15,7 +15,7 @@ The dialogue will let you choose whether you want to apply the effects to yourse
 
 ![Effective_Transferral_Dialogue](https://user-images.githubusercontent.com/62909799/151084404-b5dac31a-8c9e-4d1c-bec2-803a32242a0d.jpg)
 
-As of version 1.0.1 the same Dialogue can be opened from the item sheet, provided the item has valid effects. In case of unowned items only the "targets" and "none" buttons will be available. See above for how to configure your effects so they are eligible for transfer.
+As of version 1.0.1 the same Dialogue can be opened from the item sheet, provided the item has valid effects. In case of unowned items only the "targets" and "none" buttons will be available. See above for how to configure your effects so they are eligible for transfer. Note that both the button and dialogue prompted by rolling will not appear should there be no eligible effects for the chosen method.
 
 ![Effect_Transfer_ItemSheet_Button](https://user-images.githubusercontent.com/62909799/151265785-8e8f1d6b-ba14-4590-8aa5-9928b2649862.jpg)
 
