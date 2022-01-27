@@ -7,7 +7,7 @@ Last known working version of Warp Gate is [1.13.5](https://github.com/triodereg
 https://user-images.githubusercontent.com/62909799/151082890-08d28574-846a-4969-bbad-fd684329821a.mp4
 
 ## Instructions
-After installing the module and its dependency [Warp Gate](https://github.com/trioderegion/warpgate) you will receive a dialogue whenever you roll an item that has an active effect on it that has been set to "not transfer on item equip" (see the picture below).
+After installing the module and its dependency [Warp Gate](https://github.com/trioderegion/warpgate) you will receive a dialogue whenever you roll an item that has an active effect on it that has been set to "not transfer on item equip" (see the picture below). As of version 1.0.2 it is also possible to exclude effects from being available for transfer. Refer to the [API documentation](https://github.com/GamerFlix/effective-transferral/wiki) for more information on this.
 
 ![Effective_Transferral_Setup](https://user-images.githubusercontent.com/62909799/151084382-e012c44c-21c9-48e9-b847-8c7bfec44c08.jpg)
 
@@ -15,7 +15,7 @@ The dialogue will let you choose whether you want to apply the effects to yourse
 
 ![Effective_Transferral_Dialogue](https://user-images.githubusercontent.com/62909799/151084404-b5dac31a-8c9e-4d1c-bec2-803a32242a0d.jpg)
 
-As of version 1.0.1 the same Dialogue can be opened from the item sheet, provided the item has valid effects. See above for how to configure your effects so they are eligible for transfer.
+As of version 1.0.1 the same Dialogue can be opened from the item sheet, provided the item has valid effects. In case of unowned items only the "targets" and "none" buttons will be available. See above for how to configure your effects so they are eligible for transfer.
 
 ![Effect_Transfer_ItemSheet_Button](https://user-images.githubusercontent.com/62909799/151265785-8e8f1d6b-ba14-4590-8aa5-9928b2649862.jpg)
 
