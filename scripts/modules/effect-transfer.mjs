@@ -20,7 +20,57 @@ export class EffectTransfer{
     static NAME = "EffectTransfer";
     
 
-    // Code is heavily inspired by https://github.com/trioderegion/dnd5e-helpers/blob/c778f0186b3263f87fd3714acb92ce25953af05e/scripts/modules/ActionManagement.js#L206
+    // Gets the value of the chat flag in transferBlock, returning false if undefined
+    static getChatBlock(effect){
+        const object=effect.getFlag("effective-transferral","transferBlock")
+        return (object?.chat ? true:false);
+    }
+
+    // Updates the flag object to include chat:boolean
+    static async setChatBlock(effect,boolean){
+
+        if (effect.parent.parent){
+            ui.notifications.error(`${game.i18n.localize("ET.doubleEmbedded.error")}`)
+            return
+        }
+
+        const old_object=effect.getFlag("effective-transferral","transferBlock");
+        if (old_object){
+            let object_copy=duplicate(old_object)
+            object_copy.chat=boolean
+            effect.setFlag("effective-transferral","transferBlock",object_copy)
+        }else{
+            effect.setFlag("effective-transferral","transferBlock",{chat:boolean})
+        }
+    }
+
+    // Gets the value of the button flag in transferBlock, returning false if undefined
+    static getButtonBlock(effect){
+        const object=effect.getFlag("effective-transferral","transferBlock")
+        return (object?.button ? true:false);
+    }
+
+
+    //  Updates the flag object to include button:boolean
+    static async setButtonBlock(effect,boolean){
+
+        if (effect.parent.parent){
+            ui.notifications.error(`${game.i18n.localize("ET.doubleEmbedded.error")}`)
+            return
+        }
+
+        const old_object=effect.getFlag("effective-transferral","transferBlock");
+        if (old_object){
+            let object_copy=duplicate(old_object)
+            object_copy.button=boolean
+            effect.setFlag("effective-transferral","transferBlock",object_copy)
+        }else{
+            effect.setFlag("effective-transferral","transferBlock",{button:boolean})
+        }
+    }
+
+
+
 
     // Toggleable console.log()
     static async debug(x,active){ 
@@ -31,24 +81,18 @@ export class EffectTransfer{
 
 
     // pops up the dialogue and calls warpgate to apply effects
-    static async effectTransferDialogue(actor,tokenDoc,item){
+    static async effectTransferDialogue(actor,tokenDoc,item,validEffects){
         const bug= false //toggleable option to enable/disable debug()
         
         EffectTransfer.debug(item,bug)
         
-        //predefining again because scoping is a bitch
-        let non_transfer_effects
-        if (item.effects.size>0){//Check whether we actually have effects on the item
-            // If we do have effects get the non-transfer ones since we only want to move those
-            non_transfer_effects=item.effects.filter(e=>e.data.transfer===false)
-        }else{
+        if (validEffects.length===0){//Check whether we actually have effects on the item
             return //If we don't have any there's nothing to do
         }
         EffectTransfer.debug(item.effects,bug)
-        EffectTransfer.debug(non_transfer_effects,bug)
+        EffectTransfer.debug(validEffects,bug)
         
         // If we don't have any non-transfer effects there is nothing to do so exit
-        if (non_transfer_effects.length===0) return
         let effect_target // initiliaze the variable again because scoping
         
         
@@ -132,10 +176,10 @@ export class EffectTransfer{
         if (effect_target==="none"||!effect_target) return // If we selected to do nothing do nothing!
         
         // Reformat our active effects so we can pass them to warpgate later
-        EffectTransfer.debug(non_transfer_effects,bug)
+        EffectTransfer.debug(validEffects,bug)
         
         /*Bring effects into usable form*/
-        const aeData = non_transfer_effects.reduce( (acc, ae) => {
+        const aeData = validEffects.reduce( (acc, ae) => {
         acc[ae.data.label] = ae.toObject()
         return acc;
         }, {});
@@ -167,7 +211,7 @@ export class EffectTransfer{
             EffectTransfer.debug("Going into selfNoToken",bug)
             EffectTransfer.debug(tokenDoc,bug)
             /*If we didn't find any tokens just create the effects as usual and have the user deal with the extra inconvenience of reverting the change*/
-            await actor.createEmbeddedDocuments("ActiveEffect",non_transfer_effects.map(i => i.data))
+            await actor.createEmbeddedDocuments("ActiveEffect",validEffects.map(i => i.data))
             break;
         case 'targets':// If we selected targets option we need to put the effects on targets
             EffectTransfer.debug(game.user.targets,bug) 
@@ -196,6 +240,7 @@ export class EffectTransfer{
 
     // gets the actor, item and token from the chat message, and passes it to EffectTransferDialogue
     static async parseChatMessage(messageDocument){
+        // Code is heavily inspired by https://github.com/trioderegion/dnd5e-helpers/blob/c778f0186b3263f87fd3714acb92ce25953af05e/scripts/modules/ActionManagement.js#L206
         const bug=false;
         
         const messageData=messageDocument.data //Get the relevant part from messageDocument
@@ -240,7 +285,9 @@ export class EffectTransfer{
         */
         
         const item = actor.items.get(item_id);// get the item via id
-        await EffectTransfer.effectTransferDialogue(actor,tokenDoc,item) // Unsure whether I need to await this tbh
+
+        const validEffects=item.effects.filter(e=>e.data.transfer===false&& !EffectTransfer.getChatBlock(e))
+        await EffectTransfer.effectTransferDialogue(actor,tokenDoc,item,validEffects) // Unsure whether I need to await this tbh
     }
 
     static async EffectTransferTrigger(item){
@@ -253,17 +300,19 @@ export class EffectTransfer{
         const tokenDoc = actor?.token?.document ?? actor?.getActiveTokens({document:true})[0]?.document // even though I pass document:true it returns a token dunno why
         EffectTransfer.debug("TokenDoc gotten from item:",bug)
         EffectTransfer.debug(tokenDoc,bug)
-        await EffectTransfer.effectTransferDialogue(actor,tokenDoc,item) // Unsure whether I need to await this tbh
+
+        const validEffects=item.effects.filter(e=>e.data.transfer===false&& !EffectTransfer.getButtonBlock(e))
+        await EffectTransfer.effectTransferDialogue(actor,tokenDoc,item,validEffects) // Unsure whether I need to await this tbh
     }
 
     // Add the effect transfer button to the item sheet if the item has a non-transfer effect
     static async EffectTransferButton(app,array){
-        // Only add a button if the item has non-transfer effects
-        if (app.object.effects.filter(e=>e.data.transfer===false).length>0){
+        // Only add a button if the item has eligible effects
+        if (app.object.effects.filter(e=>e.data.transfer===false&& !EffectTransfer.getButtonBlock(e)).length>0){
             const transferButton={
                 class:"EffectTransfer",
                 icon:"fas fa-exchange-alt", //https://fontawesome.com/v5.15/icons
-                label:`${game.i18n.localize("Et.Button.Label")}`,
+                label:`${game.i18n.localize("ET.Button.Label")}`,
                 onclick: () => EffectTransfer.EffectTransferTrigger(app.object)
                 }
             array.unshift(transferButton)

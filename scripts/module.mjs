@@ -19,7 +19,7 @@
  * Main Module Organizational Tools
  */
 import { EffectTransfer } from "./modules/effect-transfer.mjs";
-
+import { api } from "./modules/api.mjs";
 /**
  * Sub Modules
  */
@@ -33,7 +33,8 @@ import { EffectTransfer } from "./modules/effect-transfer.mjs";
 const SUB_MODULES = {
   //MyLogger,
   //MyClass
-  EffectTransfer
+  EffectTransfer,
+  api
 };
 
 const SUB_APPS = {
