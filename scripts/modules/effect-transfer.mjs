@@ -54,7 +54,7 @@ export class EffectTransfer{
         
         /* If we have a token we are on a scene that uses tokens so we have stuff to target.
         Reflect that in the dialogue by giving the option to apply to targets*/
-        if (tokenDoc){
+        if (tokenDoc&&actor){
         effect_target=await warpgate.menu({
             inputs: [{
                 label: `<center>
@@ -79,7 +79,7 @@ export class EffectTransfer{
             {
             title: `${game.i18n.localize("ET.Dialog.Title")}`,
             })
-        }else{
+        }else if(actor){
             /* if we don't have a token we are either non on a scene or not on a scene that uses tokens (Theatre of Mind) so there wouldn't be anything to target anyhow*/
             effect_target=await warpgate.menu({
             inputs: [{
@@ -102,6 +102,30 @@ export class EffectTransfer{
             {
             title: `${game.i18n.localize("ET.Dialog.Title")}`,
             }) 
+        }else{// If we have neither token nor actor we are on an unowned item
+            effect_target=await warpgate.menu({
+                inputs: [{
+                    label: `<center>
+                        <p style="font-size:15px;"> 
+                        ${game.i18n.localize("ET.Dialog.Instructions.Token")}
+                        </p>  
+                        </center>`,
+                    type: 'info'
+                }],
+                buttons: [{
+                    label: `${game.i18n.localize("ET.Dialog.Button.Targets")}`,
+                    value: "targets"
+                }, {
+                    label: `${game.i18n.localize("ET.Dialog.Button.None")}`,
+                    value: "none"
+                }]
+                
+                },
+                {
+                title: `${game.i18n.localize("ET.Dialog.Title")}`,
+                })
+
+
         }
         effect_target=effect_target["buttons"]// Get the relevant part from the dialogue return value
         EffectTransfer.debug(effect_target,bug)
@@ -146,14 +170,17 @@ export class EffectTransfer{
             await actor.createEmbeddedDocuments("ActiveEffect",non_transfer_effects.map(i => i.data))
             break;
         case 'targets':// If we selected targets option we need to put the effects on targets
-            EffectTransfer.debug(game.user.targets,bug)
+            EffectTransfer.debug(game.user.targets,bug) 
             /*Loop over each target and apply the effect via warpgate*/
             for (let target of game.user.targets){
+                EffectTransfer.debug(game.user.name,bug)
+                EffectTransfer.debug(item.data.name,bug)
+                EffectTransfer.debug(target.document.data.name,bug)
                 warpgate.mutate(target.document,
                 updates,
                 {},
                 {name:`${item.data.name}`,
-                description: game.i18n.format("ET.Dialog.Mutate.Description",{userName:game.user.name,itemName:item.data.name,tokenName:tokenDoc.data.name}),
+                description: game.i18n.format("ET.Dialog.Mutate.Description",{userName:game.user.name,itemName:item.data.name,tokenName:target.document.data.name}),
                 comparisonKeys: {ActiveEffect: 'label'}
                 })
             }
@@ -223,7 +250,7 @@ export class EffectTransfer{
         
         // ?? "use this value unless its null/undefined, then default to this value"
         // In the case of a linked token actor.token is null. For unlinked it's the relevant token -> actor.token for unlinked, first token on the canvas for linked
-        const tokenDoc = actor.token?.document ?? actor.getActiveTokens({document:true})[0]?.document // even though I pass document:true it returns a token dunno why
+        const tokenDoc = actor?.token?.document ?? actor?.getActiveTokens({document:true})[0]?.document // even though I pass document:true it returns a token dunno why
         EffectTransfer.debug("TokenDoc gotten from item:",bug)
         EffectTransfer.debug(tokenDoc,bug)
         await EffectTransfer.effectTransferDialogue(actor,tokenDoc,item) // Unsure whether I need to await this tbh
