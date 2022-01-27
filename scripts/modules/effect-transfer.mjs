@@ -29,7 +29,7 @@ export class EffectTransfer{
     // Updates the flag object to include chat:boolean
     static async setChatBlock(effect,boolean){
 
-        if (effect.parent.parent){
+        if (effect?.parent?.parent){
             ui.notifications.error(`${game.i18n.localize("ET.doubleEmbedded.error")}`)
             return
         }
@@ -54,7 +54,7 @@ export class EffectTransfer{
     //  Updates the flag object to include button:boolean
     static async setButtonBlock(effect,boolean){
 
-        if (effect.parent.parent){
+        if (effect?.parent?.parent){
             ui.notifications.error(`${game.i18n.localize("ET.doubleEmbedded.error")}`)
             return
         }
