@@ -292,7 +292,7 @@ export class EffectTransfer{
                 return
             }
         }else{
-            EffectTransferdebug("Item undefined getting stuff from flags",bug)
+            EffectTransfer.debug("Item undefined getting stuff from flags",bug)
             const itemData=messageDocument.getFlag("dnd5e","itemData")
             itemName=itemData.name
             validEffectsData=itemData.effects
