@@ -81,16 +81,13 @@ export class EffectTransfer{
 
 
     // pops up the dialogue and calls warpgate to apply effects
-    static async effectTransferDialogue(actor,tokenDoc,item,validEffects){
+    static async effectTransferDialogue(actor,tokenDoc,itemName,validEffectsData){
         const bug= false //toggleable option to enable/disable debug()
-        
-        EffectTransfer.debug(item,bug)
-        
-        if (validEffects.length===0){//Check whether we actually have effects on the item
+        console.log(validEffectsData)
+        if (validEffectsData.length===0){//Check whether we actually have effects on the item
             return //If we don't have any there's nothing to do
         }
-        EffectTransfer.debug(item.effects,bug)
-        EffectTransfer.debug(validEffects,bug)
+
         
         // If we don't have any non-transfer effects there is nothing to do so exit
         let effect_target // initiliaze the variable again because scoping
@@ -176,11 +173,11 @@ export class EffectTransfer{
         if (effect_target==="none"||!effect_target) return // If we selected to do nothing do nothing!
         
         // Reformat our active effects so we can pass them to warpgate later
-        EffectTransfer.debug(validEffects,bug)
+
         
         /*Bring effects into usable form*/
-        const aeData = validEffects.reduce( (acc, ae) => {
-        acc[ae.data.label] = ae.toObject()
+        const aeData = validEffectsData.reduce( (acc, ae) => {
+        acc[ae.label] = ae
         return acc;
         }, {});
         EffectTransfer.debug("Prepared aeData",bug)
@@ -194,15 +191,14 @@ export class EffectTransfer{
         switch (effect_target){
         case 'selfToken':
             EffectTransfer.debug("Going into selfToken",bug)
-            EffectTransfer.debug(item,bug)
             EffectTransfer.debug(tokenDoc,bug)
             /*If the user selected self and we found a token we can just call warpgate.mutate on the token*/
             warpgate.mutate(tokenDoc,
             updates,
             {},
-            {name:`${item.data.name}`,
-            description: game.i18n.format("ET.Dialog.Mutate.Description",{userName:game.user.name,itemName:item.data.name,tokenName:tokenDoc.data.name}),
-            //`${game.user.name} is applying effects from ${item.data.name} to ${token.data.name}`
+            {name:`${itemName}`,
+            description: game.i18n.format("ET.Dialog.Mutate.Description",{userName:game.user.name,itemName:itemName,tokenName:tokenDoc.data.name}),
+            //`${game.user.name} is applying effects from ${itemName} to ${token.data.name}`
             comparisonKeys: {ActiveEffect: 'label'}
             })
 
@@ -211,24 +207,22 @@ export class EffectTransfer{
             EffectTransfer.debug("Going into selfNoToken",bug)
             EffectTransfer.debug(tokenDoc,bug)
             /*If we didn't find any tokens just create the effects as usual and have the user deal with the extra inconvenience of reverting the change*/
-            await actor.createEmbeddedDocuments("ActiveEffect",validEffects.map(i => i.data))
+            await actor.createEmbeddedDocuments("ActiveEffect",validEffectsData)
             break;
         case 'targets':// If we selected targets option we need to put the effects on targets
             EffectTransfer.debug(game.user.targets,bug) 
             /*Loop over each target and apply the effect via warpgate*/
             for (let target of game.user.targets){
                 EffectTransfer.debug(game.user.name,bug)
-                EffectTransfer.debug(item.data.name,bug)
                 EffectTransfer.debug(target.document.data.name,bug)
                 warpgate.mutate(target.document,
                 updates,
                 {},
-                {name:`${item.data.name}`,
-                description: game.i18n.format("ET.Dialog.Mutate.Description",{userName:game.user.name,itemName:item.data.name,tokenName:target.document.data.name}),
+                {name:`${itemName}`,
+                description: game.i18n.format("ET.Dialog.Mutate.Description",{userName:game.user.name,itemName:itemName,tokenName:target.document.data.name}),
                 comparisonKeys: {ActiveEffect: 'label'}
                 })
             }
-            // code
             break;
         default:
             ui.Notifications.error(`${game.i18n.localize("ET.Dialog.switch.error")}`)
@@ -240,6 +234,8 @@ export class EffectTransfer{
 
     // gets the actor, item and token from the chat message, and passes it to EffectTransferDialogue
     static async parseChatMessage(messageDocument){
+        console.log(messageDocument)
+        warpgate.plugin.queueUpdate( async () => {// Make sure it happens after the setFlag stuff of the saveConsumable
         // Code is heavily inspired by https://github.com/trioderegion/dnd5e-helpers/blob/c778f0186b3263f87fd3714acb92ce25953af05e/scripts/modules/ActionManagement.js#L206
         const bug=false;
         
@@ -255,6 +251,7 @@ export class EffectTransfer{
         if (speaker.token){ //If the speaker has a token use that (to support unlined actors)
             tokenDoc = await fromUuid(`Scene.${speaker.scene}.Token.${speaker.token}`);// Get the tokenDoc fromUuid
             EffectTransfer.debug(tokenDoc,bug)
+
             actor=tokenDoc.actor // Define the actor as the token.actor (again support for unlinked actors)
             EffectTransfer.debug("Effect buttons: TokenDoc Found",bug)
             EffectTransfer.debug(actor,bug)
@@ -280,14 +277,36 @@ export class EffectTransfer{
         
         if(!item_id ||!actor|| messageDocument.user.id!==game.user.id) return;
         /*
-        Is item_id defined, did we find an actor, is the current user the actors first owner?
+        Is item_id defined, did we find an actor?
         We check for the current user because otherwise everyone, not just the one who rolled the thing would get a popup window. Not good
         */
         
         const item = actor.items.get(item_id);// get the item via id
 
-        const validEffects=item.effects.filter(e=>e.data.transfer===false&& !EffectTransfer.getChatBlock(e))
-        await EffectTransfer.effectTransferDialogue(actor,tokenDoc,item,validEffects) // Unsure whether I need to await this tbh
+        let validEffectsData
+        let itemName
+        EffectTransfer.debug(item,true)
+
+        if (item){
+            console.log("Item defined getting stuff from item")
+            const validEffects=item.effects.filter(e=>e.data.transfer===false&& !EffectTransfer.getChatBlock(e))
+            console.log(validEffects)
+            itemName=item.data.name
+            if(validEffects.length>0){ // No neeed to continue if we have no useful effects
+                validEffectsData=validEffects.map(e=>e.toObject())
+            }else{
+                return
+            }
+        }else{
+            console.log("Item undefined getting stuff from flags")
+            validEffectsData=actor.getFlag("effective-transferral","storedConsumableEffects")
+            itemName=actor.getFlag("effective-transferral","storedConsumableName")
+        }
+
+        await EffectTransfer.effectTransferDialogue(actor,tokenDoc,itemName,validEffectsData)
+        await actor.unsetFlag("effective-transferral","storedConsumableEffects") //Clean up the flags we might have set.
+        await actor.unsetFlag("effective-transferral","storedConsumableName")
+        })
     }
 
     static async EffectTransferTrigger(item){
@@ -302,7 +321,8 @@ export class EffectTransfer{
         EffectTransfer.debug(tokenDoc,bug)
 
         const validEffects=item.effects.filter(e=>e.data.transfer===false&& !EffectTransfer.getButtonBlock(e))
-        await EffectTransfer.effectTransferDialogue(actor,tokenDoc,item,validEffects) // Unsure whether I need to await this tbh
+        const validEffectsData=validEffects.map(e=>e.toObject())
+        await EffectTransfer.effectTransferDialogue(actor,tokenDoc,item.data.name,validEffectsData) // Unsure whether I need to await this tbh
     }
 
     // Add the effect transfer button to the item sheet if the item has a non-transfer effect
@@ -318,10 +338,25 @@ export class EffectTransfer{
             array.unshift(transferButton)
         }
     }
+    
+    // Saves the itemdata on deletion since consumables can delete themselves on usage making accessing their effects once the chatmessage is created impossible
+    static async saveConsumableData(deletedItem){
+        warpgate.plugin.queueUpdate(async ()=>{// queue the entire thing so everything is done before parseChatMessage
+        if (deletedItem.type!=="consumable") return // Don't store item data if the item is not a consumable
+        const actor=deletedItem.parent
+        if (!actor) return // Don't store item data if the item is unowned
+        const validEffects=deletedItem.effects.filter(e=>e.data.transfer===false&& !EffectTransfer.getChatBlock(e)) // Usual effect filtering
+        const validEffectsData=validEffects.map(e=>e.toObject()) // Transform effect array into effectdata array so it is dumb enough to store it
+        const itemName=deletedItem.name // Don't need the item just the name so just get that
+        await actor.setFlag("effective-transferral","storedConsumableName",itemName)
+        await actor.setFlag("effective-transferral","storedConsumableEffects",validEffectsData) // Store the needed data as a flag on the actor
+        })
+    }
 
     static register(){
         Hooks.on("createChatMessage",EffectTransfer.parseChatMessage)
         Hooks.on("getItemSheetHeaderButtons",EffectTransfer.EffectTransferButton)
+        Hooks.on("deleteItem",EffectTransfer.saveConsumableData)
     }
 
 
