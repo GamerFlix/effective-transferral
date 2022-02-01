@@ -83,7 +83,6 @@ export class EffectTransfer{
     // pops up the dialogue and calls warpgate to apply effects
     static async effectTransferDialogue(actor,tokenDoc,itemName,validEffectsData){
         const bug= false //toggleable option to enable/disable debug()
-        console.log(validEffectsData)
         if (validEffectsData.length===0){//Check whether we actually have effects on the item
             return //If we don't have any there's nothing to do
         }
@@ -234,8 +233,6 @@ export class EffectTransfer{
 
     // gets the actor, item and token from the chat message, and passes it to EffectTransferDialogue
     static async parseChatMessage(messageDocument){
-        console.log(messageDocument)
-        warpgate.plugin.queueUpdate( async () => {// Make sure it happens after the setFlag stuff of the saveConsumable
         // Code is heavily inspired by https://github.com/trioderegion/dnd5e-helpers/blob/c778f0186b3263f87fd3714acb92ce25953af05e/scripts/modules/ActionManagement.js#L206
         const bug=false;
         
@@ -272,8 +269,6 @@ export class EffectTransfer{
         return;
         }
         EffectTransfer.debug(item_id,bug)
-        //console.log(messageDocument.user)
-        //console.log(game.user)
         
         if(!item_id ||!actor|| messageDocument.user.id!==game.user.id) return;
         /*
@@ -288,9 +283,8 @@ export class EffectTransfer{
         EffectTransfer.debug(item,true)
 
         if (item){
-            console.log("Item defined getting stuff from item")
+            EffectTransfer.debug("Item defined getting stuff from item",bug)
             const validEffects=item.effects.filter(e=>e.data.transfer===false&& !EffectTransfer.getChatBlock(e))
-            console.log(validEffects)
             itemName=item.data.name
             if(validEffects.length>0){ // No neeed to continue if we have no useful effects
                 validEffectsData=validEffects.map(e=>e.toObject())
@@ -298,15 +292,13 @@ export class EffectTransfer{
                 return
             }
         }else{
-            console.log("Item undefined getting stuff from flags")
-            validEffectsData=actor.getFlag("effective-transferral","storedConsumableEffects")
-            itemName=actor.getFlag("effective-transferral","storedConsumableName")
+            EffectTransferdebug("Item undefined getting stuff from flags",bug)
+            const itemData=messageDocument.getFlag("dnd5e","itemData")
+            itemName=itemData.name
+            validEffectsData=itemData.effects
         }
 
         await EffectTransfer.effectTransferDialogue(actor,tokenDoc,itemName,validEffectsData)
-        await actor.unsetFlag("effective-transferral","storedConsumableEffects") //Clean up the flags we might have set.
-        await actor.unsetFlag("effective-transferral","storedConsumableName")
-        })
     }
 
     static async EffectTransferTrigger(item){
@@ -338,25 +330,10 @@ export class EffectTransfer{
             array.unshift(transferButton)
         }
     }
-    
-    // Saves the itemdata on deletion since consumables can delete themselves on usage making accessing their effects once the chatmessage is created impossible
-    static async saveConsumableData(deletedItem){
-        warpgate.plugin.queueUpdate(async ()=>{// queue the entire thing so everything is done before parseChatMessage
-        if (deletedItem.type!=="consumable") return // Don't store item data if the item is not a consumable
-        const actor=deletedItem.parent
-        if (!actor) return // Don't store item data if the item is unowned
-        const validEffects=deletedItem.effects.filter(e=>e.data.transfer===false&& !EffectTransfer.getChatBlock(e)) // Usual effect filtering
-        const validEffectsData=validEffects.map(e=>e.toObject()) // Transform effect array into effectdata array so it is dumb enough to store it
-        const itemName=deletedItem.name // Don't need the item just the name so just get that
-        await actor.setFlag("effective-transferral","storedConsumableName",itemName)
-        await actor.setFlag("effective-transferral","storedConsumableEffects",validEffectsData) // Store the needed data as a flag on the actor
-        })
-    }
 
     static register(){
         Hooks.on("createChatMessage",EffectTransfer.parseChatMessage)
         Hooks.on("getItemSheetHeaderButtons",EffectTransfer.EffectTransferButton)
-        Hooks.on("deleteItem",EffectTransfer.saveConsumableData)
     }
 
 
