@@ -19,7 +19,6 @@ export class EffectTransfer{
 
     static NAME = "EffectTransfer";
     
-
     // Gets the value of the chat flag in transferBlock, returning false if undefined
     static getChatBlock(effect){
         const object=effect.getFlag("effective-transferral","transferBlock")
@@ -79,6 +78,13 @@ export class EffectTransfer{
         }
     }
 
+    // Read this: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/static
+    static isEligible = (type) => {
+        switch(type) {
+          case 'button': return (effect) => effect.data.transfer === false && !EffectTransfer.getButtonBlock(effect);
+          case 'chat':return (effect) => effect.data.transfer===false&& !EffectTransfer.getChatBlock(effect);
+        default: return (_) => false;
+      }}
 
     // pops up the dialogue and calls warpgate to apply effects
     static async effectTransferDialogue(actor,tokenDoc,itemName,validEffectsData){
@@ -284,7 +290,7 @@ export class EffectTransfer{
 
         if (item){
             EffectTransfer.debug("Item defined getting stuff from item",bug)
-            const validEffects=item.effects.filter(e=>e.data.transfer===false&& !EffectTransfer.getChatBlock(e))
+            const validEffects=item.effects.filter(EffectTransfer.isEligible("chat"))
             itemName=item.data.name
             if(validEffects.length>0){ // No neeed to continue if we have no useful effects
                 validEffectsData=validEffects.map(e=>e.toObject())
@@ -295,7 +301,7 @@ export class EffectTransfer{
             EffectTransfer.debug("Item undefined getting stuff from flags",bug)
             const itemData=messageDocument.getFlag("dnd5e","itemData")
             itemName=itemData.name
-            validEffectsData=itemData.effects
+            validEffectsData=itemData.effects.filter(this.isEligible("chat"))
         }
 
         await EffectTransfer.effectTransferDialogue(actor,tokenDoc,itemName,validEffectsData)
@@ -312,7 +318,7 @@ export class EffectTransfer{
         EffectTransfer.debug("TokenDoc gotten from item:",bug)
         EffectTransfer.debug(tokenDoc,bug)
 
-        const validEffects=item.effects.filter(e=>e.data.transfer===false&& !EffectTransfer.getButtonBlock(e))
+        const validEffects=item.effects.filter(EffectTransfer.isEligible("button"))
         const validEffectsData=validEffects.map(e=>e.toObject())
         await EffectTransfer.effectTransferDialogue(actor,tokenDoc,item.data.name,validEffectsData) // Unsure whether I need to await this tbh
     }
@@ -320,7 +326,7 @@ export class EffectTransfer{
     // Add the effect transfer button to the item sheet if the item has a non-transfer effect
     static async EffectTransferButton(app,array){
         // Only add a button if the item has eligible effects
-        if (app.object.effects.filter(e=>e.data.transfer===false&& !EffectTransfer.getButtonBlock(e)).length>0){
+        if (app.object.effects.filter(EffectTransfer.isEligible("button")).length>0){
             const transferButton={
                 class:"EffectTransfer",
                 icon:"fas fa-exchange-alt", //https://fontawesome.com/v5.15/icons
