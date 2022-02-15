@@ -320,6 +320,10 @@ export class EffectTransfer{
         EffectTransfer.debug(tokenDoc,bug)
 
         const validEffects=item.effects.filter(EffectTransfer.isEligible("button"))
+        if (validEffects.length<1){
+            ui.notifications.warn(`${game.i18n.localize("ET.Button.warn")}`)
+            return
+        }
         const validEffectsData=validEffects.map(e=>e.toObject())
         await EffectTransfer.effectTransferDialogue(actor,tokenDoc,item.data.name,validEffectsData) // Unsure whether I need to await this tbh
     }
@@ -353,19 +357,10 @@ export class EffectTransfer{
         html.css("height", "auto");
     }
 
-    static async UpdateItemHeaderButtons(data,html){
-        console.log(data)
-        data.document.parent.sheet.render(true)
-
-
-    }
-
-
     static register(){
         Hooks.on("createChatMessage",EffectTransfer.parseChatMessage)
         Hooks.on("getItemSheetHeaderButtons",EffectTransfer.EffectTransferButton)
         Hooks.on("renderActiveEffectConfig",EffectTransfer.EffectConfiguration)
-        //Hooks.on("closeActiveEffectConfig",EffectTransfer.UpdateItemHeaderButtons)
     }
 
 
