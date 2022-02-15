@@ -1,23 +1,34 @@
 {
-    "name": "fvtt-dual-track-module",
-    "title": "FVTT Dual-Track Module Template",
-    "description": "A template repository.",
-    "system": [],
-    "version": "1.1.!0",
-    "author": "",
-    "authors": [
+    "name": "effective-transferral",
+    "title": "Effective Transferral",
+    "description": "A simple module to transfer effects from items to actors for the DnD5e game system.",
+    "system": [
+        "dnd5e"
     ],
+    "version": "1.0.6",
+    "author": "",
+    "authors": [],
     "esmodules": [
         "scripts/module.mjs"
     ],
     "languages": [
+        {
+            "lang": "en",
+            "name": "English",
+            "path": "lang/en.json"
+        }
     ],
-    "styles": [
+    "dependencies": [
+        {
+            "name": "warpgate",
+            "manifest": "https://github.com/trioderegion/warpgate/releases/latest/download/module.json"
+        }
     ],
+    "styles": [],
     "socket": false,
-    "url": "",
-    "manifest": "",
-    "download": "",
+    "url": "https://github.com/GamerFlix/effective-transferral",
+    "manifest": "https://raw.githubusercontent.com/GamerFlix/effective-transferral/next/module.json",
+    "download": "https://github.com/GamerFlix/effective-transferral/releases/download/1.0.6/module.zip",
     "minimumCoreVersion": "9",
     "compatibleCoreVersion": "9"
 }
