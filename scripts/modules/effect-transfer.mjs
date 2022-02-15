@@ -339,12 +339,7 @@ export class EffectTransfer{
 
     static async EffectConfiguration(app,html,hookData){
         let tickBox=html.find('[name="transfer"]')
-        console.log("Box:",tickBox)
-        console.log(tickBox.length)
         const boxLine=tickBox.parents('div.form-group')[0]
-        console.log("Parent:",boxLine)
-        console.log("hookData",hookData)
-
         const block={button:getProperty(hookData,"effect.flags.effective-transferral.transferBlock.button") ?? false,
             	    chat:getProperty(hookData,"effect.flags.effective-transferral.transferBlock.chat") ?? false,
                     chatBlockText:`${game.i18n.localize("ET.AE.config.buttonBlock")}`,
@@ -369,7 +364,7 @@ export class EffectTransfer{
         Hooks.on("createChatMessage",EffectTransfer.parseChatMessage)
         Hooks.on("getItemSheetHeaderButtons",EffectTransfer.EffectTransferButton)
         Hooks.on("renderActiveEffectConfig",EffectTransfer.EffectConfiguration)
-        Hooks.on("closeActiveEffectConfig",EffectTransfer.UpdateItemHeaderButtons)
+        //Hooks.on("closeActiveEffectConfig",EffectTransfer.UpdateItemHeaderButtons)
     }
 
 
