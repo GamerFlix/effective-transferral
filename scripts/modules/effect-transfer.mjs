@@ -246,7 +246,7 @@ export class EffectTransfer{
         const speaker = messageData.speaker; // Get the speaker of the message (ergo the actor this rolled from)
         
         /*Is there a speaker, is the speaker on the scene, does the speaker have a token*/
-        if(!speaker || !speaker.scene /*|| !speaker.token*/)  return;
+        if(!speaker || !speaker.scene|| messageDocument.user.id!==game.user.id /*|| !speaker.token*/)  return;
         /*Initialize actor and token*/
         let actor
         let tokenDoc
@@ -277,7 +277,7 @@ export class EffectTransfer{
         }
         EffectTransfer.debug(item_id,bug)
         
-        if(!item_id ||!actor|| messageDocument.user.id!==game.user.id) return;
+        if(!item_id ||!actor) return;
         /*
         Is item_id defined, did we find an actor?
         We check for the current user because otherwise everyone, not just the one who rolled the thing would get a popup window. Not good
