@@ -260,6 +260,7 @@ export class EffectTransfer{
             EffectTransfer.debug(actor,bug)
         }else{ //If the speaker doesn't have a token, just get the actor
             actor=await fromUuid(`Actor.${speaker.actor}`)// Just get the actor fromUuid if we don't have a token
+            if(!actor) return
             EffectTransfer.debug("TokenDoc not found in Message",bug)
             EffectTransfer.debug(actor,bug)
             tokenDoc=actor.getActiveTokens({document:true})[0]?.document// get the tokenDoc from the actors active tokens. For some reason it returns the token despite being passed document
