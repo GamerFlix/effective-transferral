@@ -8,6 +8,7 @@ https://user-images.githubusercontent.com/62909799/151082890-08d28574-846a-4969-
 
 ## Instructions
 After installing the module and its dependency [Warp Gate](https://github.com/trioderegion/warpgate) you will receive a dialogue whenever you roll an item that has an active effect on it, provided that the effect has been set to "not transfer on item equip" (see the picture below). Should you want Effective Transferral to transfer effects for which this box is ticked, you can configure it to do so in the module settings.
+
 ![Effect_Transfer_button](https://user-images.githubusercontent.com/62909799/155896750-ce4c52ba-605a-4d26-bb8b-cf86f967233d.png)
 
 You can also prevent an effect from being transferred by rolling the item or clicking the effect transfer buttton on the header of the item sheet (see below) by ticking the relevant boxes on the effect configuration page or ticking the relevant setting in the module settings. Refer to the [API documentation](https://github.com/GamerFlix/effective-transferral/wiki) for information on how to configure specific effects via macro.
