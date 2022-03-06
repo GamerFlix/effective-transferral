@@ -20,6 +20,7 @@
  */
 import { EffectTransfer } from "./modules/effect-transfer.mjs";
 import { api } from "./modules/api.mjs";
+import { Settings } from "./modules/settings.mjs";
 /**
  * Sub Modules
  */
@@ -34,7 +35,8 @@ const SUB_MODULES = {
   //MyLogger,
   //MyClass
   EffectTransfer,
-  api
+  api,
+  Settings
 };
 
 const SUB_APPS = {
@@ -49,7 +51,12 @@ export class MODULE {
 
   static build() {
     //all startup tasks needed before sub module initialization
+
   }
+  static getSetting(key){
+    return game.settings.get("effective-transferral",key)
+  }
+  
 }
 
 MODULE.build();

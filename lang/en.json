@@ -11,5 +11,13 @@
     "ET.Button.warn":"No eligible effects for transfer!",
     "ET.doubleEmbedded.error":"Unable to update effects of owned items.",
     "ET.AE.config.buttonBlock":"Block transfer via button",
-    "ET.AE.config.chatBlock":"Block transfer via item roll"
+    "ET.AE.config.chatBlock":"Block transfer via item roll",
+    "setting.includeEquipTransfer.name":"Default to transferring all effects",
+    "setting.includeEquipTransfer.hint":"Transfer effects for which 'Transfer Effect to Actor' is enabled. These are usually excluded as they are transferred to the actor on item equip and are already present on the source actor as aresult. Effects can still be excluded through other means like the settings below.",
+    "setting.neverButtonTransfer.name":"Disable transfer via button",
+    "setting.neverButtonTransfer.hint":"Disables effect transfer by the item sheet header button. Also hides the buttton as a result",
+    "setting.neverChatTransfer.name":"Disable transfer via item roll",
+    "setting.neverChatTransfer.hint":"Disables effect transfer initiated by rolling an item.",
+    "setting.debugMode.name":"Enable debugging mode",
+    "setting.debugMode.hint":"Enables logging for various things in the module."
 }
