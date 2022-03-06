@@ -7,10 +7,10 @@ Last known working version of Warp Gate is [1.13.6](https://github.com/triodereg
 https://user-images.githubusercontent.com/62909799/151082890-08d28574-846a-4969-bbad-fd684329821a.mp4
 
 ## Instructions
-After installing the module and its dependency [Warp Gate](https://github.com/trioderegion/warpgate) you will receive a dialogue whenever you roll an item that has an active effect on it, provided that the effect has been set to "not transfer on item equip" (see the picture below).
+After installing the module and its dependency [Warp Gate](https://github.com/trioderegion/warpgate) you will receive a dialogue whenever you roll an item that has an active effect on it, provided that the effect has been set to "not transfer on item equip" (see the picture below). Should you want Effective Transferral to transfer effects for which this box is ticked, you can configure it to do so in the module settings.
 ![Effect_Transfer_button](https://user-images.githubusercontent.com/62909799/155896750-ce4c52ba-605a-4d26-bb8b-cf86f967233d.png)
 
-You can also prevent an effect from being transferred by rolling the item or clicking the effect transfer buttton on the header of the item sheet (see below) by ticking the relevant boxes on the effect configuration page. Refer to the [API documentation](https://github.com/GamerFlix/effective-transferral/wiki) for information on how to set these settings via a macro.
+You can also prevent an effect from being transferred by rolling the item or clicking the effect transfer buttton on the header of the item sheet (see below) by ticking the relevant boxes on the effect configuration page or ticking the relevant setting in the module settings. Refer to the [API documentation](https://github.com/GamerFlix/effective-transferral/wiki) for information on how to configure specific effects via macro.
 
 The dialogue you receive upon rolling an item will let you choose whether you want to apply the effects to yourself, targeted tokens, or none of them. If you want to choose the targeted tokens option be aware that you will need to have targeted the relevant tokens before you click the "targets" button in the dialogue.
 
@@ -20,7 +20,7 @@ The same Dialogue can be opened from the item sheet, provided the item has valid
 
 ![Effect_Transfer_ItemSheet_Button](https://user-images.githubusercontent.com/62909799/151265785-8e8f1d6b-ba14-4590-8aa5-9928b2649862.jpg)
 
-Depending on their [Warp Gate](https://github.com/trioderegion/warpgate) settings the GM may get a popup asking them to confirm the effect application. GMs that trust their players can set this prompt to automatically confirm in their [Warp Gate](https://github.com/trioderegion/warpgate) module settings. Effective Transferral does not come with any settings itself, though addition of an option for this independent of Warp Gate’s settings might be explored in the future.
+Depending on their [Warp Gate](https://github.com/trioderegion/warpgate) settings the GM may get a popup asking them to confirm the effect application. GMs that trust their players can set this prompt to automatically confirm in their [Warp Gate](https://github.com/trioderegion/warpgate) module settings. Effective Transferral does not come with any setting for this itself, though addition of an option independent of Warp Gate’s settings might be explored in the future.
 Since (in most cases see below for exceptions) the effect is applied using Warp Gate's mutate system the application can be easily reverted by clicking the revert button on the top of the sheet. Shift clicking will allow you to select which “mutation” to revert. Refer to [Warp Gate’s documentation](https://github.com/trioderegion/warpgate#mutation-commands) for further information on this feature.
 
 ![Effective_Transferral_Revert](https://user-images.githubusercontent.com/62909799/151084420-76fdfb47-385f-4755-9e2f-23ac9599d926.jpg)
