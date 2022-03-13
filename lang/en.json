@@ -19,5 +19,6 @@
     "setting.neverChatTransfer.name":"Disable transfer via item roll",
     "setting.neverChatTransfer.hint":"Disables effect transfer initiated by rolling an item.",
     "setting.debugMode.name":"Enable debugging mode",
-    "setting.debugMode.hint":"Enables logging for various things in the module."
+    "setting.debugMode.hint":"Enables logging for various things in the module.",
+    "ET.applyEffect.defaultName":"Unknown Item"
 }

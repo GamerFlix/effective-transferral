@@ -92,18 +92,42 @@ export class EffectTransfer{
 
         default: return (_) => false;
       }}
+    
+    // Takes an array of ActiveEffect data and bundles it so it can be passed to applyPackagedEffects/warpgate.mutate()
+    static packageEffects(validEffectsData){
+        const aeData = validEffectsData.reduce( (acc, ae) => {
+            acc[ae.label] = ae
+            return acc;
+            }, {});
+
+        EffectTransfer.debug("Prepared aeData")
+
+        /*Put effects into update object*/
+        const updates={
+            embedded: {ActiveEffect: aeData}
+        }
+        return updates
+    }
+    
+    //Takes a token doc, effects prepackaged by packageEffects and optionally an item name to apply effects
+    static async applyPackagedEffects(tokenDoc,packagedEffects,itemName=game.i18n.format("ET.applyEffect.defaultName")){
+        await warpgate.mutate(tokenDoc,
+            packagedEffects,
+            {},
+            {name:`Effective Transferral: ${itemName}`,
+            description: game.i18n.format("ET.Dialog.Mutate.Description",{userName:game.user.name,itemName:itemName,tokenName:tokenDoc.data.name}),
+            comparisonKeys: {ActiveEffect: 'label'}
+            })
+    }
+    
 
     // pops up the dialogue and calls warpgate to apply effects
     static async effectTransferDialogue(actor,tokenDoc,itemName,validEffectsData){
         if (validEffectsData.length===0){//Check whether we actually have effects on the item
             return //If we don't have any there's nothing to do
         }
-
-        
         // If we don't have any non-transfer effects there is nothing to do so exit
         let effect_target // initiliaze the variable again because scoping
-        
-        
         /* If we have a token we are on a scene that uses tokens so we have stuff to target.
         Reflect that in the dialogue by giving the option to apply to targets*/
         if (tokenDoc&&actor){
@@ -187,15 +211,7 @@ export class EffectTransfer{
 
         
         /*Bring effects into usable form*/
-        const aeData = validEffectsData.reduce( (acc, ae) => {
-        acc[ae.label] = ae
-        return acc;
-        }, {});
-        EffectTransfer.debug("Prepared aeData")
-        /*Put effects into update object*/
-        const updates={
-        embedded: {ActiveEffect: aeData}
-        }
+        const updates=EffectTransfer.packageEffects(validEffectsData)
         EffectTransfer.debug("Prepared updates")
         
         EffectTransfer.debug("Going into the switch case")
@@ -204,15 +220,7 @@ export class EffectTransfer{
             EffectTransfer.debug("Going into selfToken")
             EffectTransfer.debug(tokenDoc)
             /*If the user selected self and we found a token we can just call warpgate.mutate on the token*/
-            warpgate.mutate(tokenDoc,
-            updates,
-            {},
-            {name:`${itemName}`,
-            description: game.i18n.format("ET.Dialog.Mutate.Description",{userName:game.user.name,itemName:itemName,tokenName:tokenDoc.data.name}),
-            //`${game.user.name} is applying effects from ${itemName} to ${token.data.name}`
-            comparisonKeys: {ActiveEffect: 'label'}
-            })
-
+            EffectTransfer.applyPackagedEffects(tokenDoc,updates,itemName)
             break;
         case 'selfNoToken': 
             EffectTransfer.debug("Going into selfNoToken")
@@ -226,13 +234,7 @@ export class EffectTransfer{
             for (let target of game.user.targets){
                 EffectTransfer.debug(game.user.name)
                 EffectTransfer.debug(target.document.data.name)
-                warpgate.mutate(target.document,
-                updates,
-                {},
-                {name:`${itemName}`,
-                description: game.i18n.format("ET.Dialog.Mutate.Description",{userName:game.user.name,itemName:itemName,tokenName:target.document.data.name}),
-                comparisonKeys: {ActiveEffect: 'label'}
-                })
+                EffectTransfer.applyPackagedEffects(target.document,updates,itemName)
             }
             break;
         default:
