@@ -39,7 +39,7 @@ export class Settings {
             },neverButtonTransfer:{scope:"world", config, default: false, type: Boolean
             },neverChatTransfer:{scope:"world", config, default: false, type: Boolean
             },debugMode:{scope:"world", config, default: false, type: Boolean
-            }
+            },hideButtonText:{scope:"client",config,default:false, type:Boolean}
         }
 
 

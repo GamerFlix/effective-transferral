@@ -340,7 +340,7 @@ export class EffectTransfer{
             const transferButton={
                 class:"EffectTransfer",
                 icon:"fas fa-exchange-alt", //https://fontawesome.com/v5.15/icons
-                label:`${game.i18n.localize("ET.Button.Label")}`,
+                label:MODULE.getSetting("hideButtonText")?"":`${game.i18n.localize("ET.Button.Label")}`,
                 onclick: () => EffectTransfer.EffectTransferTrigger(app.object)
                 }
             array.unshift(transferButton)
