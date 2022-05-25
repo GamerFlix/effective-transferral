@@ -121,6 +121,34 @@ export class EffectTransfer{
     }
     
 
+    static async cleanUp(){
+
+        let stack=warpgate.mutationStack(token.document)
+        stack.deleteAll( (stack)=>{
+            // bail if the stack isn't from ET
+            if(!stack.name.includes("Effective Transferral:")) return false
+            
+            // Bail if stack has no effects on it
+            let stackEffectNames=Object.keys(stack.delta?.embedded?.ActiveEffect)
+            if(!stackEffectNames) return false
+            
+            let presentEffectLabels=token.document.actor.effects.map(i=>i.data.label)
+            console.log(presentEffectLabels)
+            for (let effectLabel of stackEffectNames){
+                console.log(effectLabel)
+                // Check if label is inside effects on actor if yes bail
+                let value=presentEffectLabels.includes(effectLabel)
+                console.log(value)
+                if (value) return false
+            }
+            
+            // If none of the effects inside the mutationstack are still present delete the stack
+            return true
+            }
+            )
+        await stack.commit()
+    }
+
     // pops up the dialogue and calls warpgate to apply effects
     static async effectTransferDialogue(actor,tokenDoc,itemName,validEffectsData){
         if (validEffectsData.length===0){//Check whether we actually have effects on the item
@@ -308,7 +336,7 @@ export class EffectTransfer{
             EffectTransfer.debug("Item undefined getting stuff from flags")
             const itemData=messageDocument.getFlag("dnd5e","itemData")
             itemName=itemData.name
-            validEffectsData=itemData.effects.filter(this.isEligible("chat"))
+            validEffectsData=itemData.effects.filter(EffectTransfer.isEligible("chat"))
         }
 
         await EffectTransfer.effectTransferDialogue(actor,tokenDoc,itemName,validEffectsData)
