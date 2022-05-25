@@ -21,8 +21,13 @@ export class EffectTransfer{
     static NAME = "EffectTransfer";
     
     // Gets the value of the chat flag in transferBlock, returning false if undefined
-    static getChatBlock(effect){
-        const object=effect.getFlag("effective-transferral","transferBlock")
+    static getChatBlock(effect,isFlagData=false){
+        let object={}
+        if (isFlagData){
+            object=effect.flags?.["effective-transferral"]?.transferBlock?.chat
+        }else{
+            object=effect.getFlag("effective-transferral","transferBlock")
+        }
         return (object?.chat ? true:false);
     }
 
@@ -45,8 +50,15 @@ export class EffectTransfer{
     }
 
     // Gets the value of the button flag in transferBlock, returning false if undefined
-    static getButtonBlock(effect){
-        const object=effect.getFlag("effective-transferral","transferBlock")
+    static getButtonBlock(effect,isFlagData=false){
+        let object={}
+        if (isFlagData){
+            object=effect.flags?.["effective-transferral"]?.transferBlock?.button
+        }else{
+            object=effect.getFlag("effective-transferral","transferBlock")
+        }
+        
+       
         return (object?.button ? true:false);
     }
 
@@ -73,14 +85,29 @@ export class EffectTransfer{
 
 
     // Toggleable console.log()
-    static async debug(x){ 
+    static async debug(){ 
         if (MODULE.getSetting("debugMode")){
-            console.log(x)
+            console.log(arguments)
         }
     }
 
     // Read this: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/static
-    static isEligible = (type) => {
+    // Yes this is a lot of duplicated code, I accept PRs if it bothers you
+    static isEligible = (type,isFlagData=false) => {
+        // effects inside the chatmessage data are structured differently hence we need to differentiate
+        if (isFlagData){
+        switch(type) {
+            case 'button': return (effect) => 
+            (effect.transfer===false||MODULE.getSetting("includeEquipTransfer")) &&
+                (!EffectTransfer.getButtonBlock(effect,isFlagData)&&!MODULE.getSetting("neverButtonTransfer"));
+    
+            case 'chat':return (effect) => 
+            (effect.transfer===false||MODULE.getSetting("includeEquipTransfer")) &&
+                (!EffectTransfer.getChatBlock(effect,isFlagData)&&!MODULE.getSetting("neverChatTransfer"));
+    
+            default: return (_) => false;
+        }
+        }else{
         switch(type) {
           case 'button': return (effect) => 
           (effect.data.transfer===false||MODULE.getSetting("includeEquipTransfer")) &&
@@ -91,6 +118,7 @@ export class EffectTransfer{
            (!EffectTransfer.getChatBlock(effect)&&!MODULE.getSetting("neverChatTransfer"));
 
         default: return (_) => false;
+        }
       }}
     
     // Takes an array of ActiveEffect data and bundles it so it can be passed to applyPackagedEffects/warpgate.mutate()
@@ -334,9 +362,11 @@ export class EffectTransfer{
             }
         }else{
             EffectTransfer.debug("Item undefined getting stuff from flags")
+            EffectTransfer.debug("ChatMessage",messageDocument)
             const itemData=messageDocument.getFlag("dnd5e","itemData")
             itemName=itemData.name
-            validEffectsData=itemData.effects.filter(EffectTransfer.isEligible("chat"))
+            EffectTransfer.debug("Flag data",itemData)
+            validEffectsData=itemData.effects.filter(EffectTransfer.isEligible("chat",true))
         }
 
         await EffectTransfer.effectTransferDialogue(actor,tokenDoc,itemName,validEffectsData)
