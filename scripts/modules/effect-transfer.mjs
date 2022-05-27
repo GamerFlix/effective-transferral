@@ -20,6 +20,11 @@ export class EffectTransfer{
 
     static NAME = "EffectTransfer";
     
+    static tokenDocFromActor(actor){
+        // even though I pass document:true it returns a token dunno why
+        return actor?.token?.document ?? actor?.getActiveTokens({document:true})[0]?.document 
+    }
+
     // Gets the value of the chat flag in transferBlock, returning false if undefined
     static getChatBlock(effect,isFlagData=false){
         let object={}
@@ -149,24 +154,32 @@ export class EffectTransfer{
     }
     
 
-    static async cleanUp(){
+    static async cleanUp(deletedEffect,someOptions,someId){
+        EffectTransfer.debug("effect",deletedEffect)
+        const tokenActor=deletedEffect?.parent
+        EffectTransfer.debug(tokenActor)
+        if(!tokenActor) return
+        let tokenDoc=EffectTransfer.tokenDocFromActor(tokenActor)
 
-        let stack=warpgate.mutationStack(token.document)
+        EffectTransfer.debug("Effect deletion happened on",tokenDoc)
+        
+        let stack=warpgate.mutationStack(tokenDoc)
+        EffectTransfer.debug("Mutationstack",stack)
+        
         stack.deleteAll( (stack)=>{
             // bail if the stack isn't from ET
-            if(!stack.name.includes("Effective Transferral:")) return false
+            if(!stack.name.includes("Effective Transferral: ")) return false
             
-            // Bail if stack has no effects on it
+            // Bail if stack has no effects in it
             let stackEffectNames=Object.keys(stack.delta?.embedded?.ActiveEffect)
             if(!stackEffectNames) return false
+            // Get the effect labels that are still on the token
+            let presentEffectLabels=tokenDoc.actor.effects.map(i=>i.data.label)
             
-            let presentEffectLabels=token.document.actor.effects.map(i=>i.data.label)
-            console.log(presentEffectLabels)
-            for (let effectLabel of stackEffectNames){
-                console.log(effectLabel)
+            EffectTransfer.debug(presentEffectLabels)
+            for (let stackEffectName of stackEffectNames){
                 // Check if label is inside effects on actor if yes bail
-                let value=presentEffectLabels.includes(effectLabel)
-                console.log(value)
+                let value=presentEffectLabels.includes(stackEffectName)
                 if (value) return false
             }
             
@@ -175,6 +188,7 @@ export class EffectTransfer{
             }
             )
         await stack.commit()
+        
     }
 
     // pops up the dialogue and calls warpgate to apply effects
@@ -425,6 +439,7 @@ export class EffectTransfer{
         Hooks.on("createChatMessage",EffectTransfer.parseChatMessage)
         Hooks.on("getItemSheetHeaderButtons",EffectTransfer.EffectTransferButton)
         Hooks.on("renderActiveEffectConfig",EffectTransfer.EffectConfiguration)
+        Hooks.on("deleteActiveEffect",EffectTransfer.cleanUp)
     }
     
 }
