@@ -378,6 +378,7 @@ export class EffectTransfer{
             EffectTransfer.debug("Item undefined getting stuff from flags")
             EffectTransfer.debug("ChatMessage",messageDocument)
             const itemData=messageDocument.getFlag("dnd5e","itemData")
+            if (!itemData) return console.warn("ET: Unable to find both item and embedded chat message itemData value. If temporary item, ensure a flag is embedded before creating chat message.");
             itemName=itemData.name
             EffectTransfer.debug("Flag data",itemData)
             validEffectsData=itemData.effects.filter(EffectTransfer.isEligible("chat",true))
