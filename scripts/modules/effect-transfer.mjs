@@ -154,7 +154,8 @@ export class EffectTransfer{
     }
     
 
-    static async cleanUp(deletedEffect,someOptions,someId){
+    static async cleanUp(deletedEffect,context,userId){
+        if (game.user.id!==userId) return
         EffectTransfer.debug("effect",deletedEffect)
         const tokenActor=deletedEffect?.parent
         EffectTransfer.debug(tokenActor)
