@@ -158,6 +158,8 @@ export class EffectTransfer{
         if (game.user.id!==userId) return
         EffectTransfer.debug("effect",deletedEffect)
         const tokenActor=deletedEffect?.parent
+        // Verify it's actually an actor otherwise return
+        if (!(tokenActor instanceof Actor)) return
         EffectTransfer.debug(tokenActor)
         if(!tokenActor) return
         let tokenDoc=EffectTransfer.tokenDocFromActor(tokenActor)
