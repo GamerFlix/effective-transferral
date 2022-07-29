@@ -16,7 +16,8 @@ export class api {
             getChatBlock: EffectTransfer.getChatBlock,
             packageEffects: EffectTransfer.packageEffects,
             applyPackagedEffects:EffectTransfer.applyPackagedEffects,
-            transferEffects:api.transferEffects
+            transferEffects:api.transferEffects,
+            effectTransferDialogue:EffectTransfer.effectTransferDialogue
         }
     }
     // Takes an array of effect data objects, a token doc, and optionally an itemName for the description
