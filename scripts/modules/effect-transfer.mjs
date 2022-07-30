@@ -370,9 +370,12 @@ export class EffectTransfer{
 
         if (item){
             EffectTransfer.debug("Item defined getting stuff from item")
+            EffectTransfer.debug("Function used to filter:",EffectTransfer.isEligible("chat"))
             const validEffects=item.effects.filter(EffectTransfer.isEligible("chat"))
+            EffectTransfer.debug("Filtered effects:",validEffects)
             itemName=item.data.name
             if(validEffects.length>0){ // No neeed to continue if we have no useful effects
+                EffectTransfer.debug("Effectarray has a length greater than 0",validEffects)
                 validEffectsData=validEffects.map(e=>e.toObject())
             }else{
                 return
