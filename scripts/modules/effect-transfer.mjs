@@ -20,19 +20,15 @@ export class EffectTransfer{
 
     static NAME = "EffectTransfer";
     
+    // Get the token document of a given actor
     static tokenDocFromActor(actor){
         // even though I pass document:true it returns a token dunno why
         return actor?.token?.document ?? actor?.getActiveTokens({document:true})[0]?.document 
     }
 
     // Gets the value of the chat flag in transferBlock, returning false if undefined
-    static getChatBlock(effect,isFlagData=false){
-        let object={}
-        if (isFlagData){
-            object=effect.flags?.["effective-transferral"]?.transferBlock?.chat
-        }else{
-            object=effect.getFlag("effective-transferral","transferBlock")
-        }
+    static getChatBlock(effect){
+        const object=effect.getFlag("effective-transferral","transferBlock")
         return (object?.chat ? true:false);
     }
 
@@ -45,7 +41,7 @@ export class EffectTransfer{
         }
 
         const old_object=effect.getFlag("effective-transferral","transferBlock");
-        if (old_object){
+        if (!!old_object){
             let object_copy=duplicate(old_object)
             object_copy.chat=boolean
             effect.setFlag("effective-transferral","transferBlock",object_copy)
@@ -55,15 +51,8 @@ export class EffectTransfer{
     }
 
     // Gets the value of the button flag in transferBlock, returning false if undefined
-    static getButtonBlock(effect,isFlagData=false){
-        let object={}
-        if (isFlagData){
-            object=effect.flags?.["effective-transferral"]?.transferBlock?.button
-        }else{
-            object=effect.getFlag("effective-transferral","transferBlock")
-        }
-        
-       
+    static getButtonBlock(effect){
+        let object=effect.getFlag("effective-transferral","transferBlock")
         return (object?.button ? true:false);
     }
 
@@ -95,38 +84,23 @@ export class EffectTransfer{
             console.log(arguments)
         }
     }
-
-    // Read this: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/static
-    // Yes this is a lot of duplicated code, I accept PRs if it bothers you
-    static isEligible = (type,isFlagData=false) => {
-        // effects inside the chatmessage data are structured differently hence we need to differentiate
-        if (isFlagData){
-        switch(type) {
-            case 'button': return (effect) => 
-            (effect.transfer===false||MODULE.getSetting("includeEquipTransfer")) &&
-                (!EffectTransfer.getButtonBlock(effect,isFlagData)&&!MODULE.getSetting("neverButtonTransfer"));
     
-            case 'chat':return (effect) => 
-            (effect.transfer===false||MODULE.getSetting("includeEquipTransfer")) &&
-                (!EffectTransfer.getChatBlock(effect,isFlagData)&&!MODULE.getSetting("neverChatTransfer"));
-    
-            default: return (_) => false;
-        }
-        }else{
+    // Returns a relevant function used to filter the given effect based on the specified type
+    static isEligible = (type) => {
         switch(type) {
           case 'button': return (effect) => 
-          (effect.data.transfer===false||MODULE.getSetting("includeEquipTransfer")) &&
+          (effect.transfer===false||MODULE.getSetting("includeEquipTransfer")) &&
            (!EffectTransfer.getButtonBlock(effect)&&!MODULE.getSetting("neverButtonTransfer"));
 
           case 'chat':return (effect) => 
-          (effect.data.transfer===false||MODULE.getSetting("includeEquipTransfer")) &&
+          (effect.transfer===false||MODULE.getSetting("includeEquipTransfer")) &&
            (!EffectTransfer.getChatBlock(effect)&&!MODULE.getSetting("neverChatTransfer"));
 
         default: return (_) => false;
         }
-      }}
+      }
     
-    // Takes an array of ActiveEffect data and bundles it so it can be passed to applyPackagedEffects/warpgate.mutate()
+    // Takes an array of ActiveEffectObjects and bundles it so it can be passed to applyPackagedEffects/warpgate.mutate()
     static packageEffects(validEffectsData){
         const aeData = validEffectsData.reduce( (acc, ae) => {
             acc[ae.label] = ae
@@ -148,12 +122,12 @@ export class EffectTransfer{
             packagedEffects,
             {},
             {name:`Effective Transferral: ${itemName}`,
-            description: game.i18n.format("ET.Dialog.Mutate.Description",{userName:game.user.name,itemName:itemName,tokenName:tokenDoc.data.name}),
+            description: game.i18n.format("ET.Dialog.Mutate.Description",{userName:game.user.name,itemName:itemName,tokenName:tokenDoc.name}),
             comparisonKeys: {ActiveEffect: 'label'}
             })
     }
     
-
+    // Delete mutations that no longer have the respective effect present
     static async cleanUp(deletedEffect,context,userId){
         if (game.user.id!==userId) return
         EffectTransfer.debug("effect",deletedEffect)
@@ -177,7 +151,7 @@ export class EffectTransfer{
             let stackEffectNames=Object.keys(stack.delta?.embedded?.ActiveEffect)
             if(!stackEffectNames) return false
             // Get the effect labels that are still on the token
-            let presentEffectLabels=tokenDoc.actor.effects.map(i=>i.data.label)
+            let presentEffectLabels=tokenDoc.actor.effects.map(i=>i.label)
             
             EffectTransfer.debug(presentEffectLabels)
             for (let stackEffectName of stackEffectNames){
@@ -306,7 +280,7 @@ export class EffectTransfer{
             /*Loop over each target and apply the effect via warpgate*/
             for (let target of game.user.targets){
                 EffectTransfer.debug(game.user.name)
-                EffectTransfer.debug(target.document.data.name)
+                EffectTransfer.debug(target.document.name)
                 EffectTransfer.applyPackagedEffects(target.document,updates,itemName)
             }
             break;
@@ -318,98 +292,34 @@ export class EffectTransfer{
         }
     }
 
-    // gets the actor, item and token from the chat message, and passes it to EffectTransferDialogue
-    static async parseChatMessage(messageDocument){
-        // Code is heavily inspired by https://github.com/trioderegion/dnd5e-helpers/blob/c778f0186b3263f87fd3714acb92ce25953af05e/scripts/modules/ActionManagement.js#L206
-        const messageData=messageDocument.data //Get the relevant part from messageDocument
-        const speaker = messageData.speaker; // Get the speaker of the message (ergo the actor this rolled from)
-        
-        /*Is there a speaker, is the speaker on the scene, does the speaker have a token*/
-        if(!speaker || !speaker.scene|| messageDocument.user.id!==game.user.id /*|| !speaker.token*/)  return;
-        /*Initialize actor and token*/
-        let actor
-        let tokenDoc
-        
-        if (speaker.token){ //If the speaker has a token use that (to support unlined actors)
-            tokenDoc = await fromUuid(`Scene.${speaker.scene}.Token.${speaker.token}`);// Get the tokenDoc fromUuid
-            EffectTransfer.debug(tokenDoc)
-
-            actor=tokenDoc.actor // Define the actor as the token.actor (again support for unlinked actors)
-            EffectTransfer.debug("Effect buttons: TokenDoc Found")
-            EffectTransfer.debug(actor)
-        }else{ //If the speaker doesn't have a token, just get the actor
-            actor=await fromUuid(`Actor.${speaker.actor}`)// Just get the actor fromUuid if we don't have a token
-            if(!actor) return
-            EffectTransfer.debug("TokenDoc not found in Message")
-            EffectTransfer.debug(actor)
-            tokenDoc=actor.getActiveTokens({document:true})[0]?.document// get the tokenDoc from the actors active tokens. For some reason it returns the token despite being passed document
-        }
-
-        
-        let item_id = ''; // preinitilize the id
-        try{
-        item_id = $(messageData.content).attr("data-item-id"); // try to get the item id out of the message
-        }catch(e){ 
-        // If we couldn't get an item from the message, the message wasn't created via item.roll
-        EffectTransfer.debug("Couldn't find the item")
-        return;
-        }
-        EffectTransfer.debug(item_id)
-        
-        if(!item_id ||!actor) return;
-        /*
-        Is item_id defined, did we find an actor?
-        We check for the current user because otherwise everyone, not just the one who rolled the thing would get a popup window. Not good
-        */
-        
-        const item = actor.items.get(item_id);// get the item via id
-
-        let validEffectsData
-        let itemName
-        EffectTransfer.debug(item,true)
-
-        if (item){
-            EffectTransfer.debug("Item defined getting stuff from item")
-            EffectTransfer.debug("Function used to filter:",EffectTransfer.isEligible("chat"))
-            const validEffects=item.effects.filter(EffectTransfer.isEligible("chat"))
-            EffectTransfer.debug("Filtered effects:",validEffects)
-            itemName=item.data.name
-            if(validEffects.length>0){ // No neeed to continue if we have no useful effects
-                EffectTransfer.debug("Effectarray has a length greater than 0",validEffects)
-                validEffectsData=validEffects.map(e=>e.toObject())
-            }else{
-                return
-            }
-        }else{
-            EffectTransfer.debug("Item undefined getting stuff from flags")
-            EffectTransfer.debug("ChatMessage",messageDocument)
-            const itemData=messageDocument.getFlag("dnd5e","itemData")
-            if (!itemData) return console.warn("ET: Unable to find both item and embedded chat message itemData value. If temporary item, ensure a flag is embedded before creating chat message.");
-            itemName=itemData.name
-            EffectTransfer.debug("Flag data",itemData)
-            validEffectsData=itemData.effects.filter(EffectTransfer.isEligible("chat",true))
-        }
-
+    // gets the actor, item and token from the item roll, and passes it to EffectTransferDialogue
+    static async parseItemRoll(item,context,options){
+        let actor=item?.parent
+        if (!actor) return // if the item isn't embedded it's not useful for us
+        let tokenDoc=EffectTransfer.tokenDocFromActor(actor)
+        let itemName=item?.name??"Unknown item"
+        EffectTransfer.debug("Function used to filter:",EffectTransfer.isEligible("chat"))
+        const validEffects=item.effects.filter(EffectTransfer.isEligible("chat"))
+        EffectTransfer.debug("Filtered effects:",validEffects)
+        itemName=item.name
+        if (validEffects.length===0) return // If we have nothing to transfer just exit
+        EffectTransfer.debug("Effectarray has a length greater than 0", validEffects)
+        const validEffectsData=validEffects.map(e=>e.toObject())
         await EffectTransfer.effectTransferDialogue(actor,tokenDoc,itemName,validEffectsData)
     }
+
 
     static async EffectTransferTrigger(item){
         EffectTransfer.debug(item)
         const actor=item.parent
-        
-        // ?? "use this value unless its null/undefined, then default to this value"
-        // In the case of a linked token actor.token is null. For unlinked it's the relevant token -> actor.token for unlinked, first token on the canvas for linked
-        const tokenDoc = actor?.token?.document ?? actor?.getActiveTokens({document:true})[0]?.document // even though I pass document:true it returns a token dunno why
-        EffectTransfer.debug("TokenDoc gotten from item:")
-        EffectTransfer.debug(tokenDoc)
-
+        const tokenDoc = EffectTransfer.tokenDocFromActor(actor)
         const validEffects=item.effects.filter(EffectTransfer.isEligible("button"))
-        if (validEffects.length<1){
+        if (validEffects.length===0){
             ui.notifications.warn(`${game.i18n.localize("ET.Button.warn")}`)
             return
         }
         const validEffectsData=validEffects.map(e=>e.toObject())
-        await EffectTransfer.effectTransferDialogue(actor,tokenDoc,item.data.name,validEffectsData) // Unsure whether I need to await this tbh
+        await EffectTransfer.effectTransferDialogue(actor,tokenDoc,item.name,validEffectsData)
     }
 
     // Add the effect transfer button to the item sheet if the item has a non-transfer effect
@@ -443,7 +353,7 @@ export class EffectTransfer{
     }
 
     static register(){
-        Hooks.on("createChatMessage",EffectTransfer.parseChatMessage)
+        Hooks.on("dnd5e.useItem",EffectTransfer.parseItemRoll)
         Hooks.on("getItemSheetHeaderButtons",EffectTransfer.EffectTransferButton)
         Hooks.on("renderActiveEffectConfig",EffectTransfer.EffectConfiguration)
         Hooks.on("deleteActiveEffect",EffectTransfer.cleanUp)
