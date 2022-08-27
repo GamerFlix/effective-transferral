@@ -16,50 +16,61 @@
  */
 
 export class Settings {
-    static register(){
-        this.settingsDefinition();
-
-
-    }
-
-
-    /*
-    Settings to implement:
-
-    
+  static register(){
+    this.settingsDefinition();
+  }
+  
+  /*
+  Settings to implement:
     Toggle debug mode on/off inside the settings
     always Buttonblock
     always chatblock
-    */
-    static settingsDefinition(){
-        const config = true;
-        
-        const settingsData={
-            includeEquipTransfer:{scope:"world", config, default: false, type: Boolean
-            },neverButtonTransfer:{scope:"world", config, default: false, type: Boolean
-            },neverChatTransfer:{scope:"world", config, default: false, type: Boolean
-            },debugMode:{scope:"world", config, default: false, type: Boolean
-            },hideButtonText:{scope:"client",config,default:false, type:Boolean}
-        }
-
-
-        Settings.applySettings(settingsData)
-    }
-
-
-    static applySettings(settingsData) {
-        Object.entries(settingsData).forEach(([key, data]) => {
-          game.settings.register(
-            "effective-transferral", key, {
-              name: game.i18n.localize(`setting.${key}.name`),
-              hint: game.i18n.localize(`setting.${key}.hint`),
-              ...data
-            }
-          );
-        });
+  */
+  static settingsDefinition(){
+    const config = true;
+    const settingsData = {
+      includeEquipTransfer: {
+        scope: "world",
+        config,
+        default: false,
+        type: Boolean
+      },
+      neverButtonTransfer: {
+        scope: "world",
+        config,
+        default: false,
+        type: Boolean
+      },
+      neverChatTransfer: {
+        scope: "world",
+        config,
+        default: false,
+        type: Boolean
+      },
+      debugMode: {
+        scope: "world",
+        config,
+        default: false,
+        type: Boolean
+      },
+      hideButtonText:{
+        scope: "client",
+        config,
+        default: false,
+        type: Boolean
       }
-
+    }
     
-
+    Settings.applySettings(settingsData);
+  }
+  
+  static applySettings(settingsData){
+    Object.entries(settingsData).forEach(([key, data]) => {
+      game.settings.register("effective-transferral", key, {
+        name: game.i18n.localize(`setting.${key}.name`),
+        hint: game.i18n.localize(`setting.${key}.hint`),
+        ...data
+      });
+    });
+  }
 }
-
