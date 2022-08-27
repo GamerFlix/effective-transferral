@@ -32,8 +32,6 @@ import { Settings } from "./modules/settings.mjs";
 //import { MyDialog } from './apps/my-dialog.js';
 
 const SUB_MODULES = {
-  //MyLogger,
-  //MyClass
   EffectTransfer,
   api,
   Settings
@@ -53,8 +51,9 @@ export class MODULE {
     //all startup tasks needed before sub module initialization
 
   }
+  
   static getSetting(key){
-    return game.settings.get("effective-transferral",key)
+    return game.settings.get("effective-transferral", key)
   }
   
 }
