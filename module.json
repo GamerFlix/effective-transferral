@@ -1,8 +1,7 @@
 {
-    "name": "effective-transferral",
+    "id": "effective-transferral",
     "title": "Effective Transferral",
     "description": "A simple module to transfer effects from items to actors for the DnD5e game system.",
-    "system": ["dnd5e"],
     "version": "1.0.1",
     "author": "",
     "authors": [
@@ -17,18 +16,31 @@
         "path": "lang/en.json"
         }
     ],
-	 "dependencies": [
-    {
-      "name": "warpgate",
-      "manifest": "https://github.com/trioderegion/warpgate/releases/latest/download/module.json"
+	 "relationships": 
+    {"requires":[{
+        "id": "warpgate",
+        "type":"module",
+        "manifest": "https://github.com/trioderegion/warpgate/releases/latest/download/module.json",
+        "compatibility":{
+            "minimum":"1.14.!0",
+            "verified":"1.14.!0"
+        }
+    }],
+    "systems": [{
+        "id": "dnd5e",
+        "type": "system",
+        "manifest": "https://raw.githubusercontent.com/foundryvtt/dnd5e/master/system.json"
+    }]
     }
-	],
+	,
     "styles": [
     ],
     "socket": false,
     "url": "",
     "manifest": "",
     "download": "",
-    "minimumCoreVersion": "9",
-    "compatibleCoreVersion": "9"
+    "compatibility":{
+        "minimum":10,
+        "verified":"10.278"
+    }
 }
