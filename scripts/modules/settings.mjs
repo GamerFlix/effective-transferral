@@ -47,6 +47,12 @@ export class Settings {
         default: false,
         type: Boolean
       },
+      neverDisplayCardTransfer: {
+        scope: "world",
+        config,
+        default: false,
+        type: Boolean
+      },
       debugMode: {
         scope: "world",
         config,
