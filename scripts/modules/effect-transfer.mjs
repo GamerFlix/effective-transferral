@@ -385,6 +385,7 @@ export class EffectTransfer {
         const buttonDiv = template.querySelector("div.card-buttons");
         const transferButton = document.createElement("BUTTON");
         transferButton.setAttribute("data-uuid", item.uuid);
+        transferButton.setAttribute("data-action", "transfer-effects");
         transferButton.name = "ET-TRANSFER-BUTTON";
         transferButton.innerText = "Transfer Effects";
         buttonDiv.appendChild(transferButton);
@@ -401,6 +402,7 @@ export class EffectTransfer {
         let button = event.target?.closest("button[name='ET-TRANSFER-BUTTON']");
         if ( !button ) return;
         const item = fromUuidSync(button.dataset.uuid);
+        button.disabled = false;
         EffectTransfer.EffectTransferTrigger(item, "displayCard");
     }
     
