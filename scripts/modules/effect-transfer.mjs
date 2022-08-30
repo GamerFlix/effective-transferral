@@ -372,7 +372,14 @@ export class EffectTransfer {
     }
 
     static createChatLogButtons = (item, messageData, options) => {
+        // if disabled, don't create button.
         if ( !!game.settings.get("effective-transferral", "neverDisplayCardTransfer") ) return;
+
+        // if no valid effects, don't create button.
+        const validEffects = item.effects.filter(EffectTransfer.isEligible("displayCard"));
+        if ( !validEffects.length ) return;
+
+        // create button.
         const template = document.createElement("DIV");
         template.innerHTML = messageData.content;
         const buttonDiv = template.querySelector("div.card-buttons");
