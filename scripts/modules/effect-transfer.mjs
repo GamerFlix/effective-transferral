@@ -26,6 +26,29 @@ export class EffectTransfer {
         // getActiveTokens(linked=false,document=false)
     }
 
+    //Block transfer via a given method
+    static setBlock(effect,boolean,type){
+        if ( effect?.parent?.parent ) {
+            ui.notifications.error(game.i18n.localize("ET.doubleEmbedded.error"));
+            return;
+        }
+        switch (type) {
+            case 'button': 
+                return effect.setFlag("effective-transferral", "transferBlock.button", boolean);
+            case 'chat': 
+                return effect.setFlag("effective-transferral", "transferBlock.chat", boolean);
+            case 'displayCard': 
+                return effect.setFlag("effective-transferral", "transferBlock.displayCard", boolean);
+            default:
+                return console.error(game.i18n.localize("ET.api.switchcase.error"))
+        }
+    }
+
+    //Check whether transfer via a given method is possible
+    static getBlock(effect,type){
+        return !!effect.getFlag("effective-transferral", `transferBlock.${type}`);
+    }
+
     // gets the value of the displayCard flag in transferBlock, returning false if undefined.
     static getDisplayCardBlock(effect){
         return !!effect.getFlag("effective-transferral", "transferBlock.displayCard");
@@ -33,57 +56,31 @@ export class EffectTransfer {
 
     // updates the flag object to include displayCard:boolean
     static async setDisplayCardBlock(effect, boolean){
-        if ( effect?.parent?.parent ) {
-            ui.notifications.error(game.i18n.localize("ET.doubleEmbedded.error"));
-            return;
-        }
-        return effect.setFlag("effective-transferral", "transferBlock.displayCard", boolean);
+        EffectTransfer.setBlock(effect,boolean,"displayCard")
     }
     
     // Gets the value of the chat flag in transferBlock, returning false if undefined
     static getChatBlock(effect){
-        return !!effect.getFlag("effective-transferral", "transferBlock")?.chat;
+        return !!effect.getFlag("effective-transferral", "transferBlock.chat");
     }
     
     // Updates the flag object to include chat:boolean
     static async setChatBlock(effect, boolean){
-        if (effect?.parent?.parent){
-            ui.notifications.error(game.i18n.localize("ET.doubleEmbedded.error"));
-            return;
-        }
-        
-        const old_object = effect.getFlag("effective-transferral", "transferBlock");
-        if (!!old_object){
-            let object_copy = foundry.utils.duplicate(old_object);
-            object_copy.chat = boolean;
-            return effect.setFlag("effective-transferral", "transferBlock", object_copy);
-        } else {
-            return effect.setFlag("effective-transferral", "transferBlock", {chat: boolean});
-        }
+        EffectTransfer.setBlock(effect,boolean,"chat")
     }
     
     // Gets the value of the button flag in transferBlock, returning false if undefined
     static getButtonBlock(effect){
-        return !!effect.getFlag("effective-transferral", "transferBlock")?.button;
+        return !!effect.getFlag("effective-transferral", "transferBlock.button");
     }
     
     // Updates the flag object to include button:boolean
     static async setButtonBlock(effect, boolean){
-        if (effect?.parent?.parent){
-            ui.notifications.error(game.i18n.localize("ET.doubleEmbedded.error"));
-            return;
-        }
-        
-        const old_object = effect.getFlag("effective-transferral", "transferBlock");
-        if (old_object){
-            let object_copy = foundry.utils.duplicate(old_object);
-            object_copy.button = boolean;
-            return effect.setFlag("effective-transferral", "transferBlock", object_copy);
-        } else {
-            return effect.setFlag("effective-transferral", "transferBlock", {button: boolean});
-        }
+        EffectTransfer.setBlock(effect,boolean,"button")
     }
     
+
+
     // Toggleable console.log()
     static async debug(){
         if (MODULE.getSetting("debugMode")){
@@ -96,13 +93,13 @@ export class EffectTransfer {
         switch (type) {
             case 'button': return (effect) =>
                 (effect.transfer === false || MODULE.getSetting("includeEquipTransfer")) &&
-                (!EffectTransfer.getButtonBlock(effect) && !MODULE.getSetting("neverButtonTransfer"));
+                (!EffectTransfer.getBlock(effect,"button") && !MODULE.getSetting("neverButtonTransfer"));
             case 'chat': return (effect) =>
                 (effect.transfer === false || MODULE.getSetting("includeEquipTransfer")) &&
-                (!EffectTransfer.getChatBlock(effect) && !MODULE.getSetting("neverChatTransfer"));
+                (!EffectTransfer.getBlock(effect,"chat") && !MODULE.getSetting("neverChatTransfer"));
             case 'displayCard': return (effect) =>
                 (effect.transfer === false || MODULE.getSetting("includeEquipTransfer")) &&
-                (!EffectTransfer.getDisplayCardBlock(effect) && !MODULE.getSetting("neverDisplayCardTransfer"));
+                (!EffectTransfer.getBlock(effect,"displayCard") && !MODULE.getSetting("neverDisplayCardTransfer"));
             default: return (_) => false;
         }
     }
@@ -360,6 +357,7 @@ export class EffectTransfer {
         const block = {
             button: foundry.utils.getProperty(hookData, "effect.flags.effective-transferral.transferBlock.button") ?? false,
             chat: foundry.utils.getProperty(hookData, "effect.flags.effective-transferral.transferBlock.chat") ?? false,
+            displayCard: foundry.utils.getProperty(hookData, "effect.flags.effective-transferral.transferBlock.displayCard") ?? false,
             chatBlockText: game.i18n.localize("ET.AE.config.buttonBlock"),
             buttonBlockText: game.i18n.localize("ET.AE.config.chatBlock"),
             displayCardBlockText: game.i18n.localize("ET.AE.config.displayCardBlock")
@@ -401,9 +399,11 @@ export class EffectTransfer {
     static triggerTransferFromChatLog = async (event) => {
         let button = event.target?.closest("button[name='ET-TRANSFER-BUTTON']");
         if ( !button ) return;
+        console.log(button)
         const item = fromUuidSync(button.dataset.uuid);
         button.disabled = false;
         EffectTransfer.EffectTransferTrigger(item, "displayCard");
+        
     }
     
     static register(){

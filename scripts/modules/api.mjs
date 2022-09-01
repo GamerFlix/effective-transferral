@@ -8,12 +8,16 @@ export class api {
     
     static globals(){
         globalThis.ET={
+            // Considering removal of these
             setButtonBlock: EffectTransfer.setButtonBlock,
             getButtonBlock: EffectTransfer.getButtonBlock,
             setChatBlock: EffectTransfer.setChatBlock,
             getChatBlock: EffectTransfer.getChatBlock,
             setDisplayCardBlock: EffectTransfer.setDisplayCardBlock,
             getDisplayCardBlock: EffectTransfer.getDisplayCardBlock,
+            // These will be kept for the forseeable future.
+            setBlock:EffectTransfer.setBlock,
+            getBlock:EffectTransfer.getBlock,
             packageEffects: EffectTransfer.packageEffects,
             applyPackagedEffects: EffectTransfer.applyPackagedEffects,
             transferEffects: api.transferEffects,
