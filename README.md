@@ -2,7 +2,8 @@
 Effective Transferral is a simple module for the [DnD5e Game system](https://gitlab.com/foundrynet/dnd5e) of Foundry VTT that allows you to apply effects on an item to your own token or to targeted tokens. Unlike [similar modules](https://github.com/ElfFriend-DnD/foundryvtt-item-effects-to-chat-5e) Effective Transferral supports players both targeting and applying the effects to tokens, even if they do not own them.
 This module requires you to have the [Warp Gate](https://github.com/trioderegion/warpgate) module installed as the effect application is handled by [Warp Gate](https://github.com/trioderegion/warpgate).
 
-Last known working version of Warp Gate is [1.13.6](https://github.com/trioderegion/warpgate/releases/tag/1.13.6)
+For v9 the last known compatible version of warpgate is [1.13.6](https://github.com/trioderegion/warpgate/releases/tag/1.13.6).
+For v10 the last known compatible version of warpgate is [1.14.0](https://github.com/trioderegion/warpgate/releases/tag/1.14.0)
 
 https://user-images.githubusercontent.com/62909799/151082890-08d28574-846a-4969-bbad-fd684329821a.mp4
 
