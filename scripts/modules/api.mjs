@@ -12,6 +12,8 @@ export class api {
             getButtonBlock: EffectTransfer.getButtonBlock,
             setChatBlock: EffectTransfer.setChatBlock,
             getChatBlock: EffectTransfer.getChatBlock,
+            setDisplayCardBlock: EffectTransfer.setDisplayCardBlock,
+            getDisplayCardBlock: EffectTransfer.getDisplayCardBlock,
             packageEffects: EffectTransfer.packageEffects,
             applyPackagedEffects: EffectTransfer.applyPackagedEffects,
             transferEffects: api.transferEffects,
