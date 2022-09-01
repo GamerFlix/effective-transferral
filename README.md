@@ -3,7 +3,8 @@ Effective Transferral is a simple module for the [DnD5e Game system](https://git
 This module requires you to have the [Warp Gate](https://github.com/trioderegion/warpgate) module installed as the effect application is handled by [Warp Gate](https://github.com/trioderegion/warpgate).
 
 For v9 the last known compatible version of warpgate is [1.13.6](https://github.com/trioderegion/warpgate/releases/tag/1.13.6).
-For v10 the last known compatible version of warpgate is [1.14.0](https://github.com/trioderegion/warpgate/releases/tag/1.14.0)
+
+For v10 the last known compatible version of warpgate is [1.14.0](https://github.com/trioderegion/warpgate/releases/tag/1.14.0).
 
 https://user-images.githubusercontent.com/62909799/151082890-08d28574-846a-4969-bbad-fd684329821a.mp4
 
