@@ -27,56 +27,47 @@ export class EffectTransfer {
     }
 
     //Block transfer via a given method
-    static setBlock(effect,boolean,type){
+    static async setBlock(effect,boolean,type){
         if ( effect?.parent?.parent ) {
             ui.notifications.error(game.i18n.localize("ET.doubleEmbedded.error"));
-            return;
+            return undefined;
         }
-        switch (type) {
-            case 'button': 
-                return effect.setFlag("effective-transferral", "transferBlock.button", boolean);
-            case 'chat': 
-                return effect.setFlag("effective-transferral", "transferBlock.chat", boolean);
-            case 'displayCard': 
-                return effect.setFlag("effective-transferral", "transferBlock.displayCard", boolean);
-            default:
-                return console.error(game.i18n.localize("ET.api.switchcase.error"))
-        }
+        return effect.setFlag("effective-transferral", `transferBlock.${type}`, boolean)
     }
 
     //Check whether transfer via a given method is possible
     static getBlock(effect,type){
-        return !!effect.getFlag("effective-transferral", `transferBlock.${type}`);
+        return !!foundry.utils.getProperty(effect,`flags.effective-transferral.transferBlock.${type}`)
     }
 
     // gets the value of the displayCard flag in transferBlock, returning false if undefined.
     static getDisplayCardBlock(effect){
-        return !!effect.getFlag("effective-transferral", "transferBlock.displayCard");
+        return EffectTransfer.getBlock(effect,"displayCard");
     }
 
     // updates the flag object to include displayCard:boolean
     static async setDisplayCardBlock(effect, boolean){
-        EffectTransfer.setBlock(effect,boolean,"displayCard")
+        return EffectTransfer.setBlock(effect,boolean,"displayCard")
     }
     
     // Gets the value of the chat flag in transferBlock, returning false if undefined
     static getChatBlock(effect){
-        return !!effect.getFlag("effective-transferral", "transferBlock.chat");
+        return EffectTransfer.getBlock(effect,"chat");
     }
     
     // Updates the flag object to include chat:boolean
     static async setChatBlock(effect, boolean){
-        EffectTransfer.setBlock(effect,boolean,"chat")
+        return EffectTransfer.setBlock(effect,boolean,"chat")
     }
     
     // Gets the value of the button flag in transferBlock, returning false if undefined
     static getButtonBlock(effect){
-        return !!effect.getFlag("effective-transferral", "transferBlock.button");
+        return EffectTransfer.getBlock(effect,"button");
     }
     
     // Updates the flag object to include button:boolean
     static async setButtonBlock(effect, boolean){
-        EffectTransfer.setBlock(effect,boolean,"button")
+        return EffectTransfer.setBlock(effect,boolean,"button")
     }
     
 
@@ -399,11 +390,37 @@ export class EffectTransfer {
     static triggerTransferFromChatLog = async (event) => {
         let button = event.target?.closest("button[name='ET-TRANSFER-BUTTON']");
         if ( !button ) return;
-        console.log(button)
-        const item = fromUuidSync(button.dataset.uuid);
         button.disabled = false;
-        EffectTransfer.EffectTransferTrigger(item, "displayCard");
-        
+        let itemUuid=button.dataset.uuid
+        let item = fromUuidSync(itemUuid);
+        if ( !item ) {
+            const messageId = button.closest("li.chat-message")?.dataset.messageId;
+            const message = game.messages.get(messageId);
+            const itemData = message.getFlag("dnd5e", "itemData");
+
+            // filter effects and bail if there's nothing to do
+            let validEffectsData=itemData.effects.filter(EffectTransfer.isEligible("displayCard"))
+            if (validEffectsData.length===0) return ui.notifications.error(game.i18n.localize("ET.Button.warn"))
+            
+            let actorUuid=itemUuid.substring(0,itemUuid.indexOf("Item")-1) //Extract the first portion of the uuid to get the itemholder
+            let itemHolder=fromUuidSync(actorUuid)
+
+            // Initiliaze variables
+            let actor
+            let tokenDoc
+            if (itemHolder instanceof Actor){
+                actor=itemHolder
+                tokenDoc=EffectTransfer.tokenDocFromActor(itemHolder)
+            }else if(itemHolder instanceof TokenDocument){
+                tokenDoc=itemHolder;
+                actor=itemHolder.actor
+            }
+            
+
+            return EffectTransfer.effectTransferDialogue(actor,tokenDoc,itemData.name,validEffectsData)
+        }else{
+            return EffectTransfer.EffectTransferTrigger(item, "displayCard");
+        }
     }
     
     static register(){

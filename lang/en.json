@@ -10,7 +10,6 @@
     "ET.Button.Label": "Transfer Effects",
     "ET.Button.warn": "No eligible effects for transfer!",
     "ET.doubleEmbedded.error": "Unable to update effects of owned items.",
-    "ET.api.switchcase.error":"Effective Transferral: Unsupported blockage type given",
     "ET.AE.config.buttonBlock": "Block transfer via button",
     "ET.AE.config.chatBlock": "Block transfer via item roll",
     "ET.AE.config.displayCardBlock": "Block transfer via chat log button",

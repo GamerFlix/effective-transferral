@@ -55,7 +55,9 @@ export class MODULE {
   static getSetting(key){
     return game.settings.get("effective-transferral", key)
   }
-  
+  static depreceationWarning(text){
+    console.warn("Effective Transferral:"+text)
+  }
 }
 
 MODULE.build();
