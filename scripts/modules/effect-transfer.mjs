@@ -110,6 +110,7 @@ export class EffectTransfer {
     
     //Takes a token doc, effects prepackaged by packageEffects and optionally an item name to apply effects
     static async applyPackagedEffects(tokenDoc, packagedEffects, itemName = game.i18n.format("ET.applyEffect.defaultName")){
+        const comparisonKey=MODULE.getSetting("applyIdenticalEffects")?"_id":'label'
         await warpgate.mutate(tokenDoc, packagedEffects, {}, {
             name: `Effective Transferral: ${itemName}`,
             description: game.i18n.format("ET.Dialog.Mutate.Description", {
@@ -117,7 +118,8 @@ export class EffectTransfer {
                 itemName,
                 tokenName: tokenDoc.name
             }),
-            comparisonKeys: { ActiveEffect: 'label' }
+            comparisonKeys: { ActiveEffect:  comparisonKey},
+            permanent: MODULE.getSetting("permanentTransfer" )
         });
     }
     
@@ -362,7 +364,7 @@ export class EffectTransfer {
 
     static createChatLogButtons = (item, messageData, options) => {
         // if disabled, don't create button.
-        if ( !!game.settings.get("effective-transferral", "neverDisplayCardTransfer") ) return;
+        if ( !!MODULE.getSetting("neverDisplayCardTransfer") ) return;
 
         // if no valid effects, don't create button.
         const validEffects = item.effects.filter(EffectTransfer.isEligible("displayCard"));
@@ -402,6 +404,7 @@ export class EffectTransfer {
 
             // filter effects and bail if there's nothing to do
             let validEffectsData=itemData.effects.filter(EffectTransfer.isEligible("displayCard"))
+            EffectTransfer.debug("Data of valid effects from chat button",validEffectsData)
             if (validEffectsData.length===0) return ui.notifications.warn(game.i18n.localize("ET.Button.warn"))
             
             let itemHolder=fromUuidSync(button.dataset.actorUuid)

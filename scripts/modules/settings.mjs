@@ -64,7 +64,19 @@ export class Settings {
         config,
         default: false,
         type: Boolean
-      }
+      },
+      permanentTransfer:{
+        scope: "world",
+        config,
+        default: false,
+        type: Boolean
+      },
+      applyIdenticalEffects:{
+        scope: "world",
+        config,
+        default: false,
+        type: Boolean
+      },
     }
     
     Settings.applySettings(settingsData);

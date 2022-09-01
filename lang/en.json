@@ -25,5 +25,9 @@
     "setting.debugMode.hint": "Enables logging for various things in the module.",
     "setting.hideButtonText.name": "Icon-only transfer button",
     "setting.hideButtonText.hint": "Hide the text of the item sheet header button for transferring effects.",
+    "setting.permanentTransfer.name": "Permanently transfer effects",
+    "setting.permanentTransfer.hint": "Effects are applied permanently and have to be deleted manually. Warpgate's revert button will not be available.",
+    "setting.applyIdenticalEffects.name": "Apply identical effects",
+    "setting.applyIdenticalEffects.hint": "Effects with the same name as an already present effect will be applied regardless.",
     "ET.applyEffect.defaultName": "Unknown Item"
 }
