@@ -374,7 +374,9 @@ export class EffectTransfer {
         const buttonDiv = template.querySelector("div.card-buttons");
         const transferButton = document.createElement("BUTTON");
         transferButton.setAttribute("data-uuid", item.uuid);
+        transferButton.setAttribute("data-actor-uuid", item.parent.uuid);
         transferButton.setAttribute("data-action", "transfer-effects");
+
         transferButton.name = "ET-TRANSFER-BUTTON";
         transferButton.innerText = "Transfer Effects";
         buttonDiv.appendChild(transferButton);
@@ -400,10 +402,9 @@ export class EffectTransfer {
 
             // filter effects and bail if there's nothing to do
             let validEffectsData=itemData.effects.filter(EffectTransfer.isEligible("displayCard"))
-            if (validEffectsData.length===0) return ui.notifications.error(game.i18n.localize("ET.Button.warn"))
+            if (validEffectsData.length===0) return ui.notifications.warn(game.i18n.localize("ET.Button.warn"))
             
-            let actorUuid=itemUuid.substring(0,itemUuid.indexOf("Item")-1) //Extract the first portion of the uuid to get the itemholder
-            let itemHolder=fromUuidSync(actorUuid)
+            let itemHolder=fromUuidSync(button.dataset.actorUuid)
 
             // Initiliaze variables
             let actor
@@ -416,7 +417,6 @@ export class EffectTransfer {
                 actor=itemHolder.actor
             }
             
-
             return EffectTransfer.effectTransferDialogue(actor,tokenDoc,itemData.name,validEffectsData)
         }else{
             return EffectTransfer.EffectTransferTrigger(item, "displayCard");
