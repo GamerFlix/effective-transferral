@@ -9,9 +9,9 @@ For v10 the last known compatible version of warpgate is [1.14.0](https://github
 https://user-images.githubusercontent.com/62909799/151082890-08d28574-846a-4969-bbad-fd684329821a.mp4
 
 ## Instructions
-After installing the module and its dependency [Warp Gate](https://github.com/trioderegion/warpgate) you will receive a dialogue whenever you roll an item that has an active effect on it, provided that the effect has been set to "not transfer on item equip" (see the picture below). Should you want Effective Transferral to transfer effects for which this box is ticked, you can configure it to do so in the module settings.
+After installing the module and its dependency [Warp Gate](https://github.com/trioderegion/warpgate) you will receive a dialogue whenever you roll an item that has an active effect on it, provided that the effect has been set to not "Transfer Effect to Actor" (see the picture below). Should you want Effective Transferral to transfer effects for which this box is ticked, you can configure it to do so in the module settings, more on that later.
 
-![Effect_Transfer_button](https://user-images.githubusercontent.com/62909799/155896750-ce4c52ba-605a-4d26-bb8b-cf86f967233d.png)
+![Transfer_button](https://user-images.githubusercontent.com/62909799/188308166-26e0afe6-b1be-474d-8a72-43982fb144e5.png)
 
 You can also prevent an effect from being transferred by rolling the item or clicking the effect transfer buttton on the header of the item sheet (see below) by ticking the relevant boxes on the effect configuration page or ticking the relevant setting in the module settings. Refer to the [API documentation](https://github.com/GamerFlix/effective-transferral/wiki) for information on how to configure specific effects via macro.
 
@@ -22,6 +22,14 @@ The dialogue you receive upon rolling an item will let you choose whether you wa
 The same Dialogue can be opened from the item sheet, provided the item has valid effects. In case of unowned items only the "targets" and "none" buttons will be available. See above for how to configure your effects so they are eligible for transfer. Note that both the button and dialogue prompted by rolling will not appear should there be no eligible effects for the chosen method.
 
 ![Effect_Transfer_ItemSheet_Button](https://user-images.githubusercontent.com/62909799/151265785-8e8f1d6b-ba14-4590-8aa5-9928b2649862.jpg)
+
+Another way to prompt the dialogue is a button added to the chat card of the item.
+
+![Effect_Transfer_Button](https://user-images.githubusercontent.com/62909799/188307962-a07a7c56-31ff-4262-832e-832c3fe0bd25.png)
+
+All of these transfer methods can be disabled in the settings shown below. 
+
+![Settings](https://user-images.githubusercontent.com/62909799/188308003-91adf098-af00-4bc7-acb5-ba0a9cf2be08.png)
 
 Depending on their [Warp Gate](https://github.com/trioderegion/warpgate) settings the GM may get a popup asking them to confirm the effect application. GMs that trust their players can set this prompt to automatically confirm in their [Warp Gate](https://github.com/trioderegion/warpgate) module settings. Effective Transferral does not come with any setting for this itself, though addition of an option independent of Warp Gate’s settings might be explored in the future.
 Since (in most cases see below for exceptions) the effect is applied using Warp Gate's mutate system the application can be easily reverted by clicking the revert button on the top of the sheet. Shift clicking will allow you to select which “mutation” to revert. Refer to [Warp Gate’s documentation](https://github.com/trioderegion/warpgate#mutation-commands) for further information on this feature.
