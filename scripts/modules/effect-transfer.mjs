@@ -359,7 +359,7 @@ export class EffectTransfer {
         const div = document.createElement("div");
         div.innerHTML = await renderTemplate(`modules/effective-transferral/templates/EffectConfig.html`, block);
         boxLine.after(...div.children);
-        html.css("height", "auto");
+        app.setPosition({height: "auto"});
     }
 
     static createChatLogButtons = (item, messageData, options) => {
