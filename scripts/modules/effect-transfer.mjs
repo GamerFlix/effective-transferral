@@ -137,6 +137,7 @@ export class EffectTransfer {
         if (!tokenActor) return;
 
         let tokenDoc = EffectTransfer.tokenDocFromActor(tokenActor);
+        if (!tokenDoc) return
         EffectTransfer.debug("Effect deletion happened on", tokenDoc);
 
         let stack = warpgate.mutationStack(tokenDoc);
