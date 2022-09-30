@@ -169,12 +169,20 @@ export class EffectTransfer {
     }
 
     // pops up the dialogue and calls warpgate to apply effects
-    static async effectTransferDialogue(actor, tokenDoc, itemName, validEffectsData) {
+    static async effectTransferDialogue(actor, tokenDoc, itemName, validEffectsData, castLevel, itemUuid) {
         //Check whether we actually have effects on the item
         if (validEffectsData.length === 0) {
             return; //If we do not have any, there is nothing to do
         }
-
+        let castData = {
+            origin: itemUuid,
+            castLevel: castLevel
+        }
+        validEffectsData = validEffectsData.map(i => {
+            i.flags["effective-transferral"].castData = castData
+            return i
+        })
+        EffectTransfer.debug("Effectdata prior to packaging", validEffectsData)
         // If we do not have any non-transfer effects there is nothing to do so exit
         let effect_target // initialiaze the variable again because scoping
 
@@ -306,18 +314,18 @@ export class EffectTransfer {
         EffectTransfer.debug("Function used to filter:", EffectTransfer.isEligible("chat"));
         const validEffects = item.effects.filter(EffectTransfer.isEligible("chat"));
         EffectTransfer.debug("Filtered effects:", validEffects);
-        itemName = item.name;
 
         // If we have nothing to transfer just exit
         if (validEffects.length === 0) return;
 
         EffectTransfer.debug("Effectarray has a length greater than 0", validEffects);
         const validEffectsData = validEffects.map(e => e.toObject());
-        return EffectTransfer.effectTransferDialogue(actor, tokenDoc, itemName, validEffectsData);
+        return EffectTransfer.effectTransferDialogue(actor, tokenDoc, itemName, validEffectsData, item?.system?.level, item?.uuid);
     }
 
-    static async EffectTransferTrigger(item, type = "button") {
+    static async EffectTransferTrigger(item, type = "button", castLevel = undefined) {
         EffectTransfer.debug(item);
+        if (!castLevel) castLevel = item.system.level
         const actor = item.parent;
         const tokenDoc = EffectTransfer.tokenDocFromActor(actor);
         const validEffects = item.effects.filter(EffectTransfer.isEligible(type));
@@ -326,7 +334,7 @@ export class EffectTransfer {
             return;
         }
         const validEffectsData = validEffects.map(e => e.toObject());
-        return EffectTransfer.effectTransferDialogue(actor, tokenDoc, item.name, validEffectsData);
+        return EffectTransfer.effectTransferDialogue(actor, tokenDoc, item.name, validEffectsData, castLevel, item.uuid);
     }
 
     // Add the effect transfer button to the item sheet if the item has a non-transfer effect
@@ -360,7 +368,7 @@ export class EffectTransfer {
         const div = document.createElement("div");
         div.innerHTML = await renderTemplate(`modules/effective-transferral/templates/EffectConfig.html`, block);
         boxLine.after(...div.children);
-        app.setPosition({height: "auto"});
+        app.setPosition({ height: "auto" });
     }
 
     static createChatLogButtons = (item, messageData, options) => {
@@ -379,6 +387,7 @@ export class EffectTransfer {
         transferButton.setAttribute("data-uuid", item.uuid);
         transferButton.setAttribute("data-actor-uuid", item.parent.uuid);
         transferButton.setAttribute("data-action", "transfer-effects");
+        transferButton.setAttribute("data-cast-level", item.system?.level)
 
         transferButton.name = "ET-TRANSFER-BUTTON";
         transferButton.innerText = "Transfer Effects";
@@ -395,8 +404,12 @@ export class EffectTransfer {
     static triggerTransferFromChatLog = async (event) => {
         let button = event.target?.closest("button[name='ET-TRANSFER-BUTTON']");
         if (!button) return;
+        EffectTransfer.debug("This is the button dataset:", button.dataset)
         button.disabled = false;
         let itemUuid = button.dataset.uuid
+        let castLevel = button.dataset.castLevel
+        if (typeof castLevel === "string") castLevel = Number(castLevel)
+        EffectTransfer.debug("itemUuid:", itemUuid, "castLevel:", castLevel)
         let item = fromUuidSync(itemUuid);
         if (!item) {
             const messageId = button.closest("li.chat-message")?.dataset.messageId;
@@ -421,9 +434,9 @@ export class EffectTransfer {
                 actor = itemHolder.actor
             }
 
-            return EffectTransfer.effectTransferDialogue(actor, tokenDoc, itemData.name, validEffectsData)
+            return EffectTransfer.effectTransferDialogue(actor, tokenDoc, itemData.name, validEffectsData, castLevel, itemUuid)
         } else {
-            return EffectTransfer.EffectTransferTrigger(item, "displayCard");
+            return EffectTransfer.EffectTransferTrigger(item, "displayCard", castLevel);
         }
     }
 
