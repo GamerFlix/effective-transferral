@@ -4,11 +4,11 @@
     "description": "A simple module to transfer effects from items to actors for the DnD5e game system.",
     "version": "1.0.1",
     "author": "",
-    "authors": [
+    "authors": [{
 	    "name": "Flix",
             "url": "https://github.com/GamerFlix",
-            "discord": "Flix#2215",
-    ],
+            "discord": "Flix#2215"
+    }],
     "esmodules": [
         "scripts/module.mjs"
     ],
