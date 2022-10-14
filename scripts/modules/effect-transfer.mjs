@@ -179,9 +179,10 @@ export class EffectTransfer {
             castLevel: castLevel
         }
         validEffectsData = validEffectsData.map(i => {
-            i.flags["effective-transferral"].castData = castData
+            foundry.utils.setProperty(i.flags, "effective-transferral.castData", castData)
             return i
         })
+
         EffectTransfer.debug("Effectdata prior to packaging", validEffectsData)
         // If we do not have any non-transfer effects there is nothing to do so exit
         let effect_target // initialiaze the variable again because scoping
