@@ -1,0 +1,60 @@
+.effective-transferral>p {
+  text-align: center;
+  font-style: italic;
+}
+
+.effective-transferral .effects {
+  padding: 0 1em 0.5em 1em;
+}
+
+.effective-transferral .effects .header,
+.effective-transferral .effects .effect {
+  display: grid;
+  grid-template-columns: 70% 15% 15%;
+  min-height: 30px;
+  line-height: 30px;
+}
+
+.effective-transferral .effects .header {
+  border-bottom: 2px groove lightgray;
+}
+
+.effective-transferral .effects .header>* {
+  font-weight: bold;
+}
+
+.effective-transferral .effects .header :not(:first-child),
+.effective-transferral .effects .effect :not(:first-child) {
+  justify-self: center;
+}
+
+.effective-transferral .buttons {
+  display: grid;
+  grid-template-columns: 33% 33% 33%;
+  gap: 0.4em;
+  grid-template-areas: "a b c" "d d d";
+  justify-content: space-around;
+}
+.effective-transferral .buttons-alt {
+  display: grid;
+  grid-template-columns: 50% 50%;
+  gap: 0.4em;
+  grid-template-areas: "b c";
+  justify-content: space-around;
+}
+
+.effective-transferral button[data-type="ALL"] {
+  grid-area: d;
+}
+
+.effective-transferral button[data-type="SELF"] {
+  grid-area: a;
+}
+
+.effective-transferral button[data-type="TARGET"] {
+  grid-area: b;
+}
+
+.effective-transferral button[type="CANCEL"] {
+  grid-area: c;
+}
