@@ -13,9 +13,9 @@
       <div class="effect">
         <div>{{e.label}}</div>
         {{#if ../self}}
-        <input type="checkbox" data-type="self" data-id="{{e.id}}" {{checked e.checkSelf}} {{disabled e.self}}>
+        <input type="checkbox" data-type="self" data-id="{{e.id}}" {{checked e.checkSelf}} {{disabled e.disableSelf}}>
         {{/if}}
-        <input type="checkbox" data-type="target" data-id="{{e.id}}" {{checked e.checkTarget}} {{disabled e.target}}>
+        <input type="checkbox" data-type="target" data-id="{{e.id}}" {{checked e.checkTarget}} {{disabled e.disableTarget}}>
       </div>
       {{/each}}
     </div>

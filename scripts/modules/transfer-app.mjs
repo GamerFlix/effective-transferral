@@ -34,12 +34,12 @@ export class EffectTransferApp extends FormApplication {
       const label = effect.label;
       const id = effect._id;
       // whether to disable self/target for the effect (can be 'undefined'):
-      const self = foundry.utils.getProperty(effect, "flags.effective-transferral.transferrable.self") === true;
-      const target = foundry.utils.getProperty(effect, "flags.effective-transferral.transferrable.target") === true;
+      const disableSelf = foundry.utils.getProperty(effect, "flags.effective-transferral.transferrable.self") === false;
+      const disableTarget = foundry.utils.getProperty(effect, "flags.effective-transferral.transferrable.target") === false;
       // if not disabled, default to being checked:
-      const checkSelf = !self;
-      const checkTarget = !target;
-      return { id, label, self, target, checkSelf, checkTarget };
+      const checkSelf = !disableSelf;
+      const checkTarget = !disableTarget;
+      return { id, label, disableSelf, disableTarget, checkSelf, checkTarget };
     });
     return data;
   }
