@@ -57,13 +57,13 @@ export class EffectTransferApp extends FormApplication {
       return s.checked && !s.disabled;
     }).map(s => s.dataset.id);
 
-    if (["ALL", "SELF"].includes(type)) this.applyToSelf(this.packageEffects(self));
-    if (["ALL", "TARGET"].includes(type)) this.applyToTargets(this.packageEffects(target));
+    if (["ALL", "SELF"].includes(type)) await this.applyToSelf(this.packageEffects(self));
+    if (["ALL", "TARGET"].includes(type)) await this.applyToTargets(this.packageEffects(target));
   }
 
   // create the Warp Gate mutation from this.effects, filtered by the given ids.
   packageEffects(ids) {
-    const aeData = this.effects.reduce((acc, ae) => {
+    const aeData = foundry.utils.duplicate(this.effects).reduce((acc, ae) => {
       if (ids.includes(ae._id)) acc[ae.label] = ae;
       return acc;
     }, {});
