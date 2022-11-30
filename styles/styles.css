@@ -10,7 +10,7 @@
 .effective-transferral .effects .header,
 .effective-transferral .effects .effect {
   display: grid;
-  grid-template-columns: 70% 15% 15%;
+  grid-template-columns: 4fr 1fr 1fr;
   min-height: 30px;
   line-height: 30px;
 }
@@ -30,14 +30,14 @@
 
 .effective-transferral .buttons {
   display: grid;
-  grid-template-columns: 33% 33% 33%;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 0.4em;
   grid-template-areas: "a b c" "d d d";
   justify-content: space-around;
 }
 .effective-transferral .buttons-alt {
   display: grid;
-  grid-template-columns: 50% 50%;
+  grid-template-columns: 1fr 1fr;
   gap: 0.4em;
   grid-template-areas: "b c";
   justify-content: space-around;

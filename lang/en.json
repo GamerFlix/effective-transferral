@@ -1,5 +1,5 @@
 {
-    "ET.Dialog.Instructions.Token": "Choose which actors to apply the effect to. Remember to target the tokens first should you choose the Targets option.",
+    "ET.Dialog.Instructions.Token": "Choose which actors to apply the effect to. Remember to target the tokens first should you choose the 'Apply Targets' option.",
     "ET.Dialog.Button.Self": "Apply Self",
     "ET.Dialog.Button.Targets": "Apply Targets",
     "ET.Dialog.Title": "Effect Application",

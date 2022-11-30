@@ -63,10 +63,8 @@ export class EffectTransferApp extends FormApplication {
 
   // create the Warp Gate mutation from this.effects, filtered by the given ids.
   packageEffects(ids) {
-    const aeData = this.effects.filter(e => {
-      return ids.includes(e._id);
-    }).reduce((acc, ae) => {
-      acc[ae.label] = ae;
+    const aeData = this.effects.reduce((acc, ae) => {
+      if (ids.includes(ae._id)) acc[ae.label] = ae;
       return acc;
     }, {});
 
@@ -76,7 +74,7 @@ export class EffectTransferApp extends FormApplication {
 
   // either warpgate.mutate(this.token) or this.actor.createEmbeddedDocuments().
   async applyToSelf(updates) {
-    if (this.hasToken) {
+    if (this.token) {
       return this.applyPackagedEffects(this.token, updates);
     } else {
       return this.actor.createEmbeddedDocuments("ActiveEffect", Object.values(updates.embedded.ActiveEffect));
