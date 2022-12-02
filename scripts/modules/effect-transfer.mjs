@@ -96,19 +96,6 @@ export class EffectTransfer {
         }
     }
 
-    // appends a number to mutation names to make it unique.
-    static _getValidMutationName(tokenDoc, itemName){
-      let name = `Effective Transferral: ${itemName}`;
-      let hasName = !!warpgate.mutationStack(tokenDoc).getName(name);
-      let i = 1;
-      while(!!hasName){
-        i++;
-        name = `Effective Transferral: ${itemName} (${i})`;
-        hasName = !!warpgate.mutationStack(tokenDoc).getName(name);
-      }
-      return name;
-    }
-
     // Delete mutations that no longer have the respective effect present
     static async cleanUp(deletedEffect, context, userId) {
         if (game.user.id !== userId) return;
@@ -163,6 +150,9 @@ export class EffectTransfer {
       const castData = { origin: itemUuid, castLevel: castLevel };
       validEffectsData = validEffectsData.map(i => {
         foundry.utils.setProperty(i.flags, "effective-transferral.castData", castData);
+        if (MODULE.getSetting("applyIdenticalEffects")){
+        foundry.utils.setProperty(i.flags, "effective-transferral.mutationKey", foundry.utils.randomID());
+        }
         return i;
       });
       const item = fromUuidSync(itemUuid);
