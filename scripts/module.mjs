@@ -58,6 +58,12 @@ export class MODULE {
   static depreceationWarning(text){
     console.warn("Effective Transferral:"+text)
   }
+
+  static debug() {
+    if (MODULE.getSetting("debugMode")) {
+        console.log(arguments);
+    }
+}
 }
 
 MODULE.build();

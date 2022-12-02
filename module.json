@@ -19,14 +19,14 @@
         "path": "lang/en.json"
         }
     ],
-	 "relationships": 
+	 "relationships":
     {"requires":[{
         "id": "warpgate",
         "type":"module",
         "manifest": "https://github.com/trioderegion/warpgate/releases/latest/download/module.json",
         "compatibility":{
-            "minimum":"1.14.0",
-            "verified":"1.14.0"
+            "minimum":"1.15.2",
+            "verified":"1.15.2"
         }
     }],
     "systems": [{
@@ -34,13 +34,14 @@
         "type": "system",
         "manifest": "https://raw.githubusercontent.com/foundryvtt/dnd5e/master/system.json",
 		"compatibility":{
-			"minimum":"2.0.0-alpha3",
+			"minimum":"2.0.3",
 			"verified":"2.0.3"
 		}
     }]
     }
 	,
     "styles": [
+      "styles/styles.css"
     ],
     "socket": false,
     "url": "",
@@ -48,6 +49,6 @@
     "download": "",
     "compatibility":{
         "minimum":10,
-        "verified":"10.288"
+        "verified":"10"
     }
 }

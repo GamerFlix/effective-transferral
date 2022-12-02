@@ -85,8 +85,8 @@ export class Settings {
   static applySettings(settingsData){
     Object.entries(settingsData).forEach(([key, data]) => {
       game.settings.register("effective-transferral", key, {
-        name: game.i18n.localize(`setting.${key}.name`),
-        hint: game.i18n.localize(`setting.${key}.hint`),
+        name: `setting.${key}.name`,
+        hint: `setting.${key}.hint`,
         ...data
       });
     });
