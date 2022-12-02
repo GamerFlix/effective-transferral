@@ -6,7 +6,7 @@ export class EffectTransferApp extends FormApplication {
     this.item = item ?? null;
     this.itemName = item?.name ?? game.i18n.format("ET.applyEffect.defaultName");
     this.actor = options.actor;
-    this.token = options.tokenDoc;
+    this.tokenDoc = options.tokenDoc;
     this.effects = options.validEffectsData;
     // whether to show the 'Self' related stuff
     this.self = options.tokenDoc ?? options.actor ?? false;
@@ -44,6 +44,19 @@ export class EffectTransferApp extends FormApplication {
     return data;
   }
 
+  // appends a number to mutation names to make it unique.
+  static _getValidMutationName(tokenDoc, itemName){
+    let name = `Effective Transferral: ${itemName}`;
+    let hasName = !!warpgate.mutationStack(tokenDoc).getName(name);
+    let i = 1;
+    while(!!hasName){
+      i++;
+      name = `Effective Transferral: ${itemName} (${i})`;
+      hasName = !!warpgate.mutationStack(tokenDoc).getName(name);
+    }
+    return name;
+  }
+
   async _updateObject(event, formData) {
     const button = event.submitter;
     if (button?.type !== "submit") return;
@@ -67,15 +80,14 @@ export class EffectTransferApp extends FormApplication {
       if (ids.includes(ae._id)) acc[ae.label] = ae;
       return acc;
     }, {});
-
     /* Put effects into update object */
     return { embedded: { ActiveEffect: aeData } };
   }
 
   // either warpgate.mutate(this.token) or this.actor.createEmbeddedDocuments().
   async applyToSelf(updates) {
-    if (this.token) {
-      return this.applyPackagedEffects(this.token, updates);
+    if (this.tokenDoc) {
+      return this.applyPackagedEffects(this.tokenDoc, updates);
     } else {
       return this.actor.createEmbeddedDocuments("ActiveEffect", Object.values(updates.embedded.ActiveEffect));
     }
@@ -91,13 +103,16 @@ export class EffectTransferApp extends FormApplication {
 
   // Mutate the tokenDocument with the updates object.
   async applyPackagedEffects(target, updates) {
+    if (!target) return // Don't do anything if we don't have a token
+    MODULE.debug("updates",updates)
+    if(foundry.utils.isEmpty(updates.embedded.ActiveEffect)) return MODULE.debug("Empty mutation cancelling application",updates.embedded.ActiveEffect)
     const comparisonKey = MODULE.getSetting("applyIdenticalEffects") ? "id" : "label";
     await warpgate.mutate(target, updates, {}, {
-      name: `Effective Transferral: ${this.itemName}`,
+      name: EffectTransferApp._getValidMutationName(target,this.itemName),
       description: game.i18n.format("ET.Dialog.Mutate.Description", {
         userName: game.user.name,
         itemName: this.itemName,
-        tokenName: this.token?.name
+        tokenName: this.tokenDoc?.name
       }),
       comparisonKeys: { ActiveEffect: comparisonKey },
       permanent: MODULE.getSetting("permanentTransfer")
