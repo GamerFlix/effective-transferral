@@ -1,0 +1,43 @@
+<form class="effective-transferral">
+  <p>{{{localize "ET.Dialog.Instructions.Token"}}}</p>
+  <div class="effects">
+    <div class="header">
+      <div>{{localize "EFFECT.Label"}}</div>
+      {{#if self}}
+      <div>{{localize "DND5E.TargetSelf"}}</div>
+      {{/if}}
+      <div>{{localize "DND5E.Target"}}</div>
+    </div>
+    <div class="transferrable-effects">
+      {{#each effects as |e|}}
+      <div class="effect">
+        <div>{{e.label}}</div>
+        {{#if ../self}}
+        <input type="checkbox" data-type="self" data-id="{{e.id}}" {{checked e.checkSelf}} {{disabled e.disableSelf}}>
+        {{/if}}
+        <input type="checkbox" data-type="target" data-id="{{e.id}}" {{checked e.checkTarget}} {{disabled e.disableTarget}}>
+      </div>
+      {{/each}}
+    </div>
+  </div>
+  {{#if self}}
+  <div class="buttons">
+  {{else}}
+  <div class="buttons-alt">
+  {{/if}}
+    {{#if self}}
+    <button type="submit" data-type="ALL">
+      <i class="fa-solid fa-check"></i> {{localize "Apply"}}
+    </button>
+    <button type="submit" data-type="SELF">
+      <i class="fa-solid fa-user"></i> {{localize "ET.Dialog.Button.Self"}}
+    </button>
+    {{/if}}
+    <button type="submit" data-type="TARGET">
+      <i class="fa-solid fa-bullseye"></i> {{localize "ET.Dialog.Button.Targets"}}
+    </button>
+    <button type="cancel">
+      <i class="fa-solid fa-times"></i> {{localize "Cancel"}}
+    </button>
+  </div>
+</form>

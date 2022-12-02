@@ -15,6 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 import { MODULE } from '../module.mjs'
+import { EffectTransferApp } from './transfer-app.mjs';
 
 export class EffectTransfer {
 
@@ -95,34 +96,6 @@ export class EffectTransfer {
         }
     }
 
-    // Takes an array of ActiveEffectObjects and bundles it so it can be passed to applyPackagedEffects / warpgate.mutate()
-    static packageEffects(validEffectsData) {
-        const aeData = validEffectsData.reduce((acc, ae) => {
-            acc[ae.label] = ae;
-            return acc;
-        }, {});
-
-        EffectTransfer.debug("Prepared aeData");
-
-        /* Put effects into update object */
-        return { embedded: { ActiveEffect: aeData } };
-    }
-
-    //Takes a token doc, effects prepackaged by packageEffects and optionally an item name to apply effects
-    static async applyPackagedEffects(tokenDoc, packagedEffects, itemName = game.i18n.format("ET.applyEffect.defaultName")) {
-        const comparisonKey = MODULE.getSetting("applyIdenticalEffects") ? "id" : 'label';
-        await warpgate.mutate(tokenDoc, packagedEffects, {}, {
-            name: this._getValidMutationName(tokenDoc, itemName),
-            description: game.i18n.format("ET.Dialog.Mutate.Description", {
-                userName: game.user.name,
-                itemName,
-                tokenName: tokenDoc.name
-            }),
-            comparisonKeys: { ActiveEffect: comparisonKey },
-            permanent: MODULE.getSetting("permanentTransfer")
-        });
-    }
-
     // appends a number to mutation names to make it unique.
     static _getValidMutationName(tokenDoc, itemName){
       let name = `Effective Transferral: ${itemName}`;
@@ -182,139 +155,19 @@ export class EffectTransfer {
     }
 
     // pops up the dialogue and calls warpgate to apply effects
-    static async effectTransferDialogue(actor, tokenDoc, itemName, validEffectsData, castLevel, itemUuid) {
-        //Check whether we actually have effects on the item
-        if (validEffectsData.length === 0) {
-            return; //If we do not have any, there is nothing to do
-        }
-        let castData = {
-            origin: itemUuid,
-            castLevel: castLevel
-        }
-        validEffectsData = validEffectsData.map(i => {
-            foundry.utils.setProperty(i.flags, "effective-transferral.castData", castData)
-            return i
-        })
 
-        EffectTransfer.debug("Effectdata prior to packaging", validEffectsData)
-        // If we do not have any non-transfer effects there is nothing to do so exit
-        let effect_target // initialiaze the variable again because scoping
+    static async effectTransferDialogue(actor, tokenDoc, validEffectsData, castLevel, itemUuid) {
+      // Check whether we actually have effects on the item
+      if (!validEffectsData.length) return;
 
-        /* If we have a token we are on a scene that uses tokens so we have stuff to target.
-        Reflect that in the dialogue by giving the option to apply to targets */
-        if (tokenDoc && actor) {
-            effect_target = await warpgate.menu({
-                inputs: [{
-                    label: `<center>
-                    <p style="font-size:15px;">
-                        ${game.i18n.localize("ET.Dialog.Instructions.Token")}
-                    </p>
-                    </center>`,
-                    type: 'info'
-                }],
-                buttons: [{
-                    label: game.i18n.localize("ET.Dialog.Button.Self"),
-                    value: "selfToken"
-                }, {
-                    label: game.i18n.localize("ET.Dialog.Button.Targets"),
-                    value: "targets"
-                }, {
-                    label: game.i18n.localize("ET.Dialog.Button.None"),
-                    value: "none"
-                }]
-            }, {
-                title: game.i18n.localize("ET.Dialog.Title"),
-            });
-        }
-        /* if we do not have a token, we are either not on a scene or not on a scene
-        that uses tokens (Theatre of the Mind) so there would not be anything to target anyhow */
-        else if (actor) {
-            effect_target = await warpgate.menu({
-                inputs: [{
-                    label: `<center>
-                    <p style="font-size:15px;">
-                        ${game.i18n.localize("ET.Dialog.Instructions.Notoken")}
-                    </p>
-                    </center>`,
-                    type: 'info'
-                }],
-                buttons: [{
-                    label: game.i18n.localize("ET.Dialog.Button.Self"),
-                    value: "selfNoToken"
-                }, {
-                    label: game.i18n.localize("ET.Dialog.Button.None"),
-                    value: "none"
-                }]
-            }, {
-                title: game.i18n.localize("ET.Dialog.Title"),
-            });
-        }
-        // If we have neither token nor actor we are on an unowned item
-        else {
-            effect_target = await warpgate.menu({
-                inputs: [{
-                    label: `<center>
-                    <p style="font-size:15px;">
-                        ${game.i18n.localize("ET.Dialog.Instructions.Token")}
-                    </p>
-                    </center>`,
-                    type: 'info'
-                }],
-                buttons: [{
-                    label: game.i18n.localize("ET.Dialog.Button.Targets"),
-                    value: "targets"
-                }, {
-                    label: game.i18n.localize("ET.Dialog.Button.None"),
-                    value: "none"
-                }]
-            }, {
-                title: game.i18n.localize("ET.Dialog.Title"),
-            });
-        }
-
-        // Get the relevant part from the dialogue return value
-        effect_target = effect_target["buttons"];
-        EffectTransfer.debug(effect_target);
-
-        // If we selected to do nothing do nothing!
-        if (effect_target === "none" || !effect_target) return;
-
-        // Reformat our active effects so we can pass them to warpgate later:
-
-        /* Bring effects into usable form */
-        const updates = EffectTransfer.packageEffects(validEffectsData);
-        EffectTransfer.debug("Prepared updates");
-        EffectTransfer.debug("Going into the switch case");
-
-        switch (effect_target) {
-            case 'selfToken':
-                EffectTransfer.debug("Going into selfToken");
-                EffectTransfer.debug(tokenDoc);
-                /* If the user selected self and we found a token,
-                we can just call warpgate.mutate on the token */
-                EffectTransfer.applyPackagedEffects(tokenDoc, updates, itemName);
-                break;
-            case 'selfNoToken':
-                EffectTransfer.debug("Going into selfNoToken");
-                EffectTransfer.debug(tokenDoc);
-                /* If we did not find any tokens just create the effects as usual
-                and have the user deal with the extra inconvenience of reverting the change */
-                await actor.createEmbeddedDocuments("ActiveEffect", validEffectsData);
-                break;
-            case 'targets':
-                // If we selected targets option we need to put the effects on targets
-                EffectTransfer.debug(game.user.targets);
-                /* Loop over each target and apply the effect via warpgate */
-                for (let target of game.user.targets) {
-                    EffectTransfer.debug(game.user.name);
-                    EffectTransfer.debug(target.document.name);
-                    EffectTransfer.applyPackagedEffects(target.document, updates, itemName);
-                }
-                break;
-            default:
-                ui.Notifications.error(`${game.i18n.localize("ET.Dialog.switch.error")}`);
-                return;
-        }
+      const castData = { origin: itemUuid, castLevel: castLevel };
+      validEffectsData = validEffectsData.map(i => {
+        foundry.utils.setProperty(i.flags, "effective-transferral.castData", castData);
+        return i;
+      });
+      const item = fromUuidSync(itemUuid);
+      const options = { actor, tokenDoc, validEffectsData };
+      return new EffectTransferApp(item, options).render(true);
     }
 
     // gets the actor, item, and token from the item roll, and passes it to EffectTransferDialogue
@@ -324,7 +177,6 @@ export class EffectTransfer {
         if (!actor) return;
 
         let tokenDoc = EffectTransfer.tokenDocFromActor(actor);
-        let itemName = item?.name ?? "Unknown item";
         EffectTransfer.debug("Function used to filter:", EffectTransfer.isEligible("chat"));
         const validEffects = item.effects.filter(EffectTransfer.isEligible("chat"));
         EffectTransfer.debug("Filtered effects:", validEffects);
@@ -334,7 +186,7 @@ export class EffectTransfer {
 
         EffectTransfer.debug("Effectarray has a length greater than 0", validEffects);
         const validEffectsData = validEffects.map(e => e.toObject());
-        return EffectTransfer.effectTransferDialogue(actor, tokenDoc, itemName, validEffectsData, item?.system?.level, item?.uuid);
+        return EffectTransfer.effectTransferDialogue(actor, tokenDoc, validEffectsData, item?.system?.level, item?.uuid);
     }
 
     static async EffectTransferTrigger(item, type = "button", castLevel = undefined) {
@@ -348,7 +200,7 @@ export class EffectTransfer {
             return;
         }
         const validEffectsData = validEffects.map(e => e.toObject());
-        return EffectTransfer.effectTransferDialogue(actor, tokenDoc, item.name, validEffectsData, castLevel, item.uuid);
+        return EffectTransfer.effectTransferDialogue(actor, tokenDoc, validEffectsData, castLevel, item.uuid);
     }
 
     // Add the effect transfer button to the item sheet if the item has a non-transfer effect
@@ -376,7 +228,9 @@ export class EffectTransfer {
             displayCard: foundry.utils.getProperty(hookData, "effect.flags.effective-transferral.transferBlock.displayCard") ?? false,
             chatBlockText: game.i18n.localize("ET.AE.config.buttonBlock"),
             buttonBlockText: game.i18n.localize("ET.AE.config.chatBlock"),
-            displayCardBlockText: game.i18n.localize("ET.AE.config.displayCardBlock")
+            displayCardBlockText: game.i18n.localize("ET.AE.config.displayCardBlock"),
+            self: foundry.utils.getProperty(hookData, "effect.flags.effective-transferral.transferrable.self") ?? true,
+            target: foundry.utils.getProperty(hookData, "effect.flags.effective-transferral.transferrable.target") ?? true
         }
 
         const div = document.createElement("div");
@@ -404,7 +258,7 @@ export class EffectTransfer {
         transferButton.setAttribute("data-cast-level", item.system?.level)
 
         transferButton.name = "ET-TRANSFER-BUTTON";
-        transferButton.innerText = "Transfer Effects";
+        transferButton.innerText = game.i18n.localize("ET.Button.Label");
         buttonDiv.appendChild(transferButton);
         messageData.content = template.innerHTML;
     }
@@ -448,7 +302,7 @@ export class EffectTransfer {
                 actor = itemHolder.actor
             }
 
-            return EffectTransfer.effectTransferDialogue(actor, tokenDoc, itemData.name, validEffectsData, castLevel, itemUuid)
+            return EffectTransfer.effectTransferDialogue(actor, tokenDoc, validEffectsData, castLevel, itemUuid)
         } else {
             return EffectTransfer.EffectTransferTrigger(item, "displayCard", castLevel);
         }
@@ -462,5 +316,34 @@ export class EffectTransfer {
         Hooks.on("dnd5e.preDisplayCard", EffectTransfer.createChatLogButtons);
         Hooks.on("renderChatLog", EffectTransfer.setupChatListeners);
         Hooks.on("renderChatPopout", EffectTransfer.setupChatListeners);
+    }
+
+    /** Kept around for the API: **/
+
+    // Takes an array of ActiveEffectObjects and bundles it so it can be passed to applyPackagedEffects / warpgate.mutate()
+    static packageEffects(validEffectsData) {
+      const aeData = validEffectsData.reduce((acc, ae) => {
+        acc[ae.label] = ae;
+        return acc;
+      }, {});
+      EffectTransfer.debug("Prepared aeData");
+
+      /* Put effects into update object */
+      return { embedded: { ActiveEffect: aeData } };
+    }
+
+    //Takes a token doc, effects prepackaged by packageEffects and optionally an item name to apply effects
+    static async applyPackagedEffects(tokenDoc, packagedEffects, itemName = game.i18n.format("ET.applyEffect.defaultName")) {
+      const comparisonKey = MODULE.getSetting("applyIdenticalEffects") ? "id" : 'label'
+      await warpgate.mutate(tokenDoc, packagedEffects, {}, {
+        name: `Effective Transferral: ${itemName}`,
+        description: game.i18n.format("ET.Dialog.Mutate.Description", {
+          userName: game.user.name,
+          itemName,
+          tokenName: tokenDoc.name
+        }),
+        comparisonKeys: { ActiveEffect: comparisonKey },
+        permanent: MODULE.getSetting("permanentTransfer")
+      });
     }
 }
