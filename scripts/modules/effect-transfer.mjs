@@ -1,17 +1,17 @@
-/* 
+/*
  * This file is part of the Effective Transferral module (https://github.com/GamerFlix/effective-transferral)
  * Copyright (c) 2021 Felix Pohl.
- * 
- * This program is free software: you can redistribute it and/or modify  
- * it under the terms of the GNU General Public License as published by  
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
  *
- * This program is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License 
+ * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 import { MODULE } from '../module.mjs'
@@ -110,9 +110,9 @@ export class EffectTransfer {
 
     //Takes a token doc, effects prepackaged by packageEffects and optionally an item name to apply effects
     static async applyPackagedEffects(tokenDoc, packagedEffects, itemName = game.i18n.format("ET.applyEffect.defaultName")) {
-        const comparisonKey = MODULE.getSetting("applyIdenticalEffects") ? "id" : 'label'
+        const comparisonKey = MODULE.getSetting("applyIdenticalEffects") ? "id" : 'label';
         await warpgate.mutate(tokenDoc, packagedEffects, {}, {
-            name: `Effective Transferral: ${itemName}`,
+            name: this._getValidMutationName(tokenDoc, itemName),
             description: game.i18n.format("ET.Dialog.Mutate.Description", {
                 userName: game.user.name,
                 itemName,
@@ -121,6 +121,19 @@ export class EffectTransfer {
             comparisonKeys: { ActiveEffect: comparisonKey },
             permanent: MODULE.getSetting("permanentTransfer")
         });
+    }
+
+    // appends a number to mutation names to make it unique.
+    static _getValidMutationName(tokenDoc, itemName){
+      let name = `Effective Transferral: ${itemName}`;
+      let hasName = !!warpgate.mutationStack(tokenDoc).getName(name);
+      let i = 1;
+      while(!!hasName){
+        i++;
+        name = `Effective Transferral: ${itemName} (${i})`;
+        hasName = !!warpgate.mutationStack(tokenDoc).getName(name);
+      }
+      return name;
     }
 
     // Delete mutations that no longer have the respective effect present
@@ -193,9 +206,9 @@ export class EffectTransfer {
             effect_target = await warpgate.menu({
                 inputs: [{
                     label: `<center>
-                    <p style="font-size:15px;"> 
+                    <p style="font-size:15px;">
                         ${game.i18n.localize("ET.Dialog.Instructions.Token")}
-                    </p>  
+                    </p>
                     </center>`,
                     type: 'info'
                 }],
@@ -219,7 +232,7 @@ export class EffectTransfer {
             effect_target = await warpgate.menu({
                 inputs: [{
                     label: `<center>
-                    <p style="font-size:15px;">  
+                    <p style="font-size:15px;">
                         ${game.i18n.localize("ET.Dialog.Instructions.Notoken")}
                     </p>
                     </center>`,
