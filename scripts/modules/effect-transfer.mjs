@@ -151,9 +151,11 @@ export class EffectTransfer {
       validEffectsData = validEffectsData.map(i => {
         let mutationKey=foundry.utils.randomID()
         foundry.utils.setProperty(i.flags, "effective-transferral.castData", castData);
+        /*
         if (MODULE.getSetting("applyIdenticalEffects")){
         foundry.utils.setProperty(i.flags, "effective-transferral.mutationKey", mutationKey);
         }
+        */
         MODULE.debug("Key",mutationKey)
         return i;
       });

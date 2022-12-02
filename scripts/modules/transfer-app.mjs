@@ -108,7 +108,7 @@ export class EffectTransferApp extends FormApplication {
     if(foundry.utils.isEmpty(updates.embedded.ActiveEffect)) return MODULE.debug("Empty mutation cancelling application",updates.embedded.ActiveEffect)
     //const comparisonKey = MODULE.getSetting("applyIdenticalEffects") ? "flags.effective-transferral.mutationKey" : "label";
     const comparisonKey = MODULE.getSetting("applyIdenticalEffects") ? "id" : "label";
-    await warpgate.mutate(target, updates, {}, {
+    const warpgateObject={
       name: EffectTransferApp._getValidMutationName(target,this.itemName),
       description: game.i18n.format("ET.Dialog.Mutate.Description", {
         userName: game.user.name,
@@ -117,6 +117,9 @@ export class EffectTransferApp extends FormApplication {
       }),
       comparisonKeys: { ActiveEffect: comparisonKey },
       permanent: MODULE.getSetting("permanentTransfer")
-    });
+    }
+
+    MODULE.debug({target,updates,warpgateObject})
+    await warpgate.mutate(target, foundry.utils.duplicate(updates), {}, warpgateObject);
   }
 }

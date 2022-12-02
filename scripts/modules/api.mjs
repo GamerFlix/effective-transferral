@@ -21,7 +21,8 @@ export class api {
             packageEffects: EffectTransfer.packageEffects,
             applyPackagedEffects: EffectTransfer.applyPackagedEffects,
             transferEffects: api.transferEffects,
-            effectTransferDialogue: EffectTransfer.effectTransferDialogue
+            effectTransferDialogue: EffectTransfer.effectTransferDialogue,
+            effectTransferTrigger: EffectTransfer.EffectTransferTrigger
         }
     }
     
