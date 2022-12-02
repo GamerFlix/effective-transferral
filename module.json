@@ -19,7 +19,7 @@
         "path": "lang/en.json"
         }
     ],
-	 "relationships": 
+	 "relationships":
     {"requires":[{
         "id": "warpgate",
         "type":"module",
@@ -41,6 +41,7 @@
     }
 	,
     "styles": [
+      "styles/styles.css"
     ],
     "socket": false,
     "url": "",
