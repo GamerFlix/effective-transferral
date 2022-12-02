@@ -106,7 +106,8 @@ export class EffectTransferApp extends FormApplication {
     if (!target) return // Don't do anything if we don't have a token
     MODULE.debug("updates",updates)
     if(foundry.utils.isEmpty(updates.embedded.ActiveEffect)) return MODULE.debug("Empty mutation cancelling application",updates.embedded.ActiveEffect)
-    const comparisonKey = MODULE.getSetting("applyIdenticalEffects") ? "flags.effective-transferral.mutationKey" : "label";
+    //const comparisonKey = MODULE.getSetting("applyIdenticalEffects") ? "flags.effective-transferral.mutationKey" : "label";
+    const comparisonKey = MODULE.getSetting("applyIdenticalEffects") ? "id" : "label";
     await warpgate.mutate(target, updates, {}, {
       name: EffectTransferApp._getValidMutationName(target,this.itemName),
       description: game.i18n.format("ET.Dialog.Mutate.Description", {

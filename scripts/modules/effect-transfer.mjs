@@ -149,10 +149,12 @@ export class EffectTransfer {
 
       const castData = { origin: itemUuid, castLevel: castLevel };
       validEffectsData = validEffectsData.map(i => {
+        let mutationKey=foundry.utils.randomID()
         foundry.utils.setProperty(i.flags, "effective-transferral.castData", castData);
         if (MODULE.getSetting("applyIdenticalEffects")){
-        foundry.utils.setProperty(i.flags, "effective-transferral.mutationKey", foundry.utils.randomID());
+        foundry.utils.setProperty(i.flags, "effective-transferral.mutationKey", mutationKey);
         }
+        MODULE.debug("Key",mutationKey)
         return i;
       });
       const item = fromUuidSync(itemUuid);
