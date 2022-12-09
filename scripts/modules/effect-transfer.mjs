@@ -317,13 +317,13 @@ export class EffectTransfer {
                 let mutationKey=foundry.utils.randomID()
                 foundry.utils.setProperty(ae, "flags.effective-transferral.mutationKey", mutationKey);
                 acc[mutationKey] = ae;
-                if (!!ae.duration.startTime) delete ae.duration.startTimee
+                if (!!ae?.duration?.startTime) delete ae.duration.startTime
                 return acc;
               }, {});
         }else{
             aeData = validEffectsData.reduce((acc, ae) => {
                 acc[ae.label] = ae;
-                if (!!ae.duration.startTime) delete ae.duration.startTime
+                if (!!ae?.duration?.startTime) delete ae.duration.startTime
                 return acc;
               }, {});
         }

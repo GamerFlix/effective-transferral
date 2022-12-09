@@ -85,14 +85,14 @@ export class EffectTransferApp extends FormApplication {
                   let mutationKey=foundry.utils.randomID()
                   foundry.utils.setProperty(ae, "flags.effective-transferral.mutationKey", mutationKey);
                   acc[mutationKey] = ae;
-                  if (!!ae.duration.startTime) delete ae.duration.startTime
+                  if (!!ae?.duration?.startTime) delete ae.duration.startTime
                 }
                 return acc;
               }, {});
         }else{
             aeData = foundry.utils.duplicate(this.effects).reduce((acc, ae) => {
               if (ids.includes(ae._id)) acc[ae.label] = ae;
-                if (!!ae.duration.startTime) delete ae.duration.startTime
+                if (!!ae?.duration?.startTime) delete ae.duration.startTime
                 return acc;
               }, {});
         }
