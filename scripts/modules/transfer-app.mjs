@@ -85,15 +85,19 @@ export class EffectTransferApp extends FormApplication {
                   let mutationKey=foundry.utils.randomID()
                   foundry.utils.setProperty(ae, "flags.effective-transferral.mutationKey", mutationKey);
                   acc[mutationKey] = ae;
-                  for(const [key, val] of Object.entries(ae.duration)) if(val === null) delete effect.duration[key];
+                  for(const [key, val] of Object.entries(myEffectDataObject.duration ?? {})){
+                    if(val === null) delete myEffectDataObject.duration[key];
+                  }
                 }
                 return acc;
               }, {});
         }else{
             aeData = foundry.utils.duplicate(this.effects).reduce((acc, ae) => {
               if (ids.includes(ae._id)) acc[ae.label] = ae;
-              for(const [key, val] of Object.entries(ae.duration)) if(val === null) delete effect.duration[key];
-                return acc;
+              for(const [key, val] of Object.entries(myEffectDataObject.duration ?? {})){
+                if(val === null) delete myEffectDataObject.duration[key];
+              }
+              return acc;
               }, {});
               
         }
