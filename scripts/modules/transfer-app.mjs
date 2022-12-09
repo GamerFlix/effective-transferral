@@ -87,7 +87,7 @@ export class EffectTransferApp extends FormApplication {
                 return acc;
               }, {});
         }else{
-            aeData = validEffectsData.reduce((acc, ae) => {
+            aeData = foundry.utils.duplicate(this.effects).reduce((acc, ae) => {
                 acc[ae.label] = ae;
                 return acc;
               }, {});
