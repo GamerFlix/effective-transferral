@@ -149,14 +149,6 @@ export class EffectTransfer {
 
       const castData = { origin: itemUuid, castLevel: castLevel };
       validEffectsData = validEffectsData.map(i => {
-        let mutationKey=foundry.utils.randomID()
-        foundry.utils.setProperty(i.flags, "effective-transferral.castData", castData);
-        /*
-        if (MODULE.getSetting("applyIdenticalEffects")){
-        foundry.utils.setProperty(i.flags, "effective-transferral.mutationKey", mutationKey);
-        }
-        */
-        MODULE.debug("Key",mutationKey)
         return i;
       });
       const item = fromUuidSync(itemUuid);
@@ -316,10 +308,24 @@ export class EffectTransfer {
 
     // Takes an array of ActiveEffectObjects and bundles it so it can be passed to applyPackagedEffects / warpgate.mutate()
     static packageEffects(validEffectsData) {
-      const aeData = validEffectsData.reduce((acc, ae) => {
-        acc[ae.label] = ae;
-        return acc;
-      }, {});
+
+        
+        foundry.utils.setProperty(i.flags, "effective-transferral.castData", castData);
+        let aeData={}
+        if (MODULE.getSetting("applyIdenticalEffects")){
+            aeData = validEffectsData.reduce((acc, ae) => {
+                let mutationKey=foundry.utils.randomID()
+                foundry.utils.setProperty(ae, "flags.effective-transferral.mutationKey", mutationKey);
+                acc[mutationKey] = ae;
+                return acc;
+              }, {});
+        }else{
+            aeData = validEffectsData.reduce((acc, ae) => {
+                acc[ae.label] = ae;
+                return acc;
+              }, {});
+        }
+      
       EffectTransfer.debug("Prepared aeData");
 
       /* Put effects into update object */

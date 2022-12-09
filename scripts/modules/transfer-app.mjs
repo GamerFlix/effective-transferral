@@ -76,11 +76,31 @@ export class EffectTransferApp extends FormApplication {
 
   // create the Warp Gate mutation from this.effects, filtered by the given ids.
   packageEffects(ids) {
+
+    let aeData={}
+        if (MODULE.getSetting("applyIdenticalEffects")){
+            MODULE.debug(this.effects)
+            aeData = foundry.utils.duplicate(this.effects).reduce((acc, ae) => {
+                let mutationKey=foundry.utils.randomID()
+                foundry.utils.setProperty(ae, "flags.effective-transferral.mutationKey", mutationKey);
+                acc[mutationKey] = ae;
+                return acc;
+              }, {});
+        }else{
+            aeData = validEffectsData.reduce((acc, ae) => {
+                acc[ae.label] = ae;
+                return acc;
+              }, {});
+        }
+
+    /*
     const aeData = foundry.utils.duplicate(this.effects).reduce((acc, ae) => {
       if (ids.includes(ae._id)) acc[ae.label] = ae;
       return acc;
     }, {});
+    */
     /* Put effects into update object */
+    MODULE.debug(aeData)
     return { embedded: { ActiveEffect: aeData } };
   }
 

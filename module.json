@@ -25,8 +25,8 @@
         "type":"module",
         "manifest": "https://github.com/trioderegion/warpgate/releases/latest/download/module.json",
         "compatibility":{
-            "minimum":"1.15.2",
-            "verified":"1.15.2"
+            "minimum":"1.15.4",
+            "verified":"1.15.4"
         }
     }],
     "systems": [{
