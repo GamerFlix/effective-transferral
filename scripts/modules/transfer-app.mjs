@@ -93,8 +93,9 @@ export class EffectTransferApp extends FormApplication {
             aeData = foundry.utils.duplicate(this.effects).reduce((acc, ae) => {
               if (ids.includes(ae._id)) acc[ae.label] = ae;
                 delete ae.duration?.startTime
+                return acc;
               }, {});
-              return acc;
+              
         }
 
     /* Put effects into update object */
