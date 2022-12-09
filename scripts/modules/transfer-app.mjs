@@ -81,14 +81,16 @@ export class EffectTransferApp extends FormApplication {
         if (MODULE.getSetting("applyIdenticalEffects")){
             MODULE.debug(this.effects)
             aeData = foundry.utils.duplicate(this.effects).reduce((acc, ae) => {
-                let mutationKey=foundry.utils.randomID()
-                foundry.utils.setProperty(ae, "flags.effective-transferral.mutationKey", mutationKey);
-                acc[mutationKey] = ae;
+                if (ids.includes(ae._id)){
+                  let mutationKey=foundry.utils.randomID()
+                  foundry.utils.setProperty(ae, "flags.effective-transferral.mutationKey", mutationKey);
+                  acc[mutationKey] = ae;
+                }
                 return acc;
               }, {});
         }else{
             aeData = foundry.utils.duplicate(this.effects).reduce((acc, ae) => {
-                acc[ae.label] = ae;
+              if (ids.includes(ae._id)) acc[ae.label] = ae;
                 return acc;
               }, {});
         }
