@@ -85,19 +85,19 @@ export class EffectTransferApp extends FormApplication {
                   let mutationKey=foundry.utils.randomID()
                   foundry.utils.setProperty(ae, "flags.effective-transferral.mutationKey", mutationKey);
                   acc[mutationKey] = ae;
-                  delete ae.duration?.startTime
+                  for(const [key, val] of Object.entries(ae.duration)) if(val === null) delete effect.duration[key];
                 }
                 return acc;
               }, {});
         }else{
             aeData = foundry.utils.duplicate(this.effects).reduce((acc, ae) => {
               if (ids.includes(ae._id)) acc[ae.label] = ae;
-                delete ae.duration?.startTime
+              for(const [key, val] of Object.entries(ae.duration)) if(val === null) delete effect.duration[key];
                 return acc;
               }, {});
               
         }
-
+        
     /* Put effects into update object */
     MODULE.debug(aeData)
     return { embedded: { ActiveEffect: aeData } };
