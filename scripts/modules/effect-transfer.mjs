@@ -116,22 +116,34 @@ export class EffectTransfer {
         let stack = warpgate.mutationStack(tokenDoc);
         EffectTransfer.debug("Mutationstack", stack);
 
+        // Check whether we need to match effects by name or by something else
+        let matchName=!MODULE.getSetting("applyIdenticalEffects")
+
         stack.deleteAll((stack) => {
             // bail if the stack is not from ET
             if (!stack.name.includes("Effective Transferral: ")) return false;
-
+                
             // Bail if stack has no effects in it
-            let stackEffectNames = Object.keys(stack.delta?.embedded?.ActiveEffect);
-            if (!stackEffectNames) return false;
+            const stackEffectIdentifiers = Object.keys(stack.delta?.embedded?.ActiveEffect);
+            if (!stackEffectIdentifiers) return false;
 
-            // Get the effect labels that are still on the token
-            let presentEffectLabels = tokenDoc.actor.effects.map(i => i.label);
+            let presentEffectIdentifiers=[]
 
-            EffectTransfer.debug(presentEffectLabels);
+            // Get the thing we need to match by
+            if (matchName){
+                presentEffectIdentifiers=tokenDoc.actor.effects.map(i => i.label);
+            }else{
+                presentEffectIdentifiers=tokenDoc.actor.effects.map(i=>i.flags?.["effective-transferral"]?.mutationKey)
+            }
+            EffectTransfer.debug(presentEffectIdentifiers);
 
-            for (let stackEffectName of stackEffectNames) {
-                // Check if label is inside effects on actor if yes bail
-                let value = presentEffectLabels.includes(stackEffectName);
+            // Check each identifier
+
+            for (let stackEffectIdentifier of stackEffectIdentifiers) {
+                // Do nothing if we got a mixed identifier situation
+                if (stackEffectIdentifier===undefined) continue
+                // Check if identifier is inside effects on actor if yes bail
+                let value = presentEffectIdentifiers.includes(stackEffectIdentifier);
                 if (value) return false;
             }
 
