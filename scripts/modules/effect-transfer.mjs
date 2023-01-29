@@ -320,9 +320,6 @@ export class EffectTransfer {
 
     // Takes an array of ActiveEffectObjects and bundles it so it can be passed to applyPackagedEffects / warpgate.mutate()
     static packageEffects(validEffectsData) {
-
-
-        foundry.utils.setProperty(i.flags, "effective-transferral.castData", castData);
         let aeData={}
         if (MODULE.getSetting("applyIdenticalEffects")){
             aeData = validEffectsData.reduce((acc, ae) => {
@@ -345,7 +342,6 @@ export class EffectTransfer {
         }
 
       EffectTransfer.debug("Prepared aeData");
-
       /* Put effects into update object */
       return { embedded: { ActiveEffect: aeData } };
     }
