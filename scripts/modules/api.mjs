@@ -1,5 +1,5 @@
 import { EffectTransfer } from "./effect-transfer.mjs";
-
+import { MODULE } from "../module.mjs";
 export class api {
     
     static register() {
