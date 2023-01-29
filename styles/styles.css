@@ -1,4 +1,4 @@
-.effective-transferral>p {
+.effective-transferral > p {
   text-align: center;
   font-style: italic;
 }
@@ -19,7 +19,7 @@
   border-bottom: 2px groove lightgray;
 }
 
-.effective-transferral .effects .header>* {
+.effective-transferral .effects .header > * {
   font-weight: bold;
 }
 
@@ -35,6 +35,7 @@
   grid-template-areas: "a b c" "d d d";
   justify-content: space-around;
 }
+
 .effective-transferral .buttons-alt {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -57,4 +58,15 @@
 
 .effective-transferral button[type="CANCEL"] {
   grid-area: c;
+}
+
+.active-effect-sheet .effective-transferral {
+  border: 2px groove;
+  border-radius: 5px;
+  padding: 0 5px;
+}
+
+.active-effect-sheet .effective-transferral .title {
+  font-weight: bold;
+  padding: 3px 0 0 0;
 }
