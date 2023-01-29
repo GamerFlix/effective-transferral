@@ -13,9 +13,9 @@
       <div class="effect">
         <div>{{e.label}}</div>
         {{#if ../self}}
-        <input type="checkbox" data-type="self" data-id="{{e.id}}" {{checked e.checkSelf}} {{disabled e.disableSelf}}>
+        <input type="checkbox" data-type="self" data-id="{{e.id}}" {{checked e.checkSelf}} {{disabled (or e.disableSelf e.alwaysTransfer)}}>
         {{/if}}
-        <input type="checkbox" data-type="target" data-id="{{e.id}}" {{checked e.checkTarget}} {{disabled e.disableTarget}}>
+        <input type="checkbox" data-type="target" data-id="{{e.id}}" {{checked e.checkTarget}} {{disabled (or e.disableTarget e.alwaysTransfer)}}>
       </div>
       {{/each}}
     </div>
@@ -27,7 +27,7 @@
   {{/if}}
     {{#if self}}
     <button type="submit" data-type="ALL">
-      <i class="fa-solid fa-check"></i> {{localize "Apply"}}
+      <i class="fa-solid fa-check"></i> {{localize "ET.Dialog.Button.Apply"}}
     </button>
     <button type="submit" data-type="SELF">
       <i class="fa-solid fa-user"></i> {{localize "ET.Dialog.Button.Self"}}

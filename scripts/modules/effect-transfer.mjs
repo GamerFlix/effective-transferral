@@ -122,7 +122,7 @@ export class EffectTransfer {
         stack.deleteAll((stack) => {
             // bail if the stack is not from ET
             if (!stack.name.includes("Effective Transferral: ")) return false;
-                
+
             // Bail if stack has no effects in it
             const stackEffectIdentifiers = Object.keys(stack.delta?.embedded?.ActiveEffect);
             if (!stackEffectIdentifiers) return false;
@@ -165,7 +165,12 @@ export class EffectTransfer {
       });
       const item = fromUuidSync(itemUuid);
       const options = { actor, tokenDoc, validEffectsData };
-      return new EffectTransferApp(item, options).render(true);
+      const allAlways = validEffectsData.every(data => {
+        return data.flags?.["effective-transferral"]?.transferrable?.always === true;
+      });
+      const app = new EffectTransferApp(item, options);
+      if(allAlways) return app.immediateTransfer(validEffectsData);
+      return app.render(true);
     }
 
     // gets the actor, item, and token from the item roll, and passes it to EffectTransferDialogue
@@ -220,19 +225,12 @@ export class EffectTransfer {
         const boxLine = tickBox?.closest('div.form-group');
         if (!boxLine) return;
 
-        const block = {
-            button: foundry.utils.getProperty(hookData, "effect.flags.effective-transferral.transferBlock.button") ?? false,
-            chat: foundry.utils.getProperty(hookData, "effect.flags.effective-transferral.transferBlock.chat") ?? false,
-            displayCard: foundry.utils.getProperty(hookData, "effect.flags.effective-transferral.transferBlock.displayCard") ?? false,
-            chatBlockText: game.i18n.localize("ET.AE.config.buttonBlock"),
-            buttonBlockText: game.i18n.localize("ET.AE.config.chatBlock"),
-            displayCardBlockText: game.i18n.localize("ET.AE.config.displayCardBlock"),
-            self: foundry.utils.getProperty(hookData, "effect.flags.effective-transferral.transferrable.self") ?? true,
-            target: foundry.utils.getProperty(hookData, "effect.flags.effective-transferral.transferrable.target") ?? true
-        }
+        const data = foundry.utils.getProperty(hookData, "effect.flags.effective-transferral") ?? {};
+        const blockers = data.transferBlock ?? {button: false, chat: false, displayCard: false};
+        const trans = data.transferrable ?? {self: true, target: true, always: false};
 
         const div = document.createElement("div");
-        div.innerHTML = await renderTemplate(`modules/effective-transferral/templates/EffectConfig.html`, block);
+        div.innerHTML = await renderTemplate(`modules/effective-transferral/templates/EffectConfig.hbs`, {...blockers, ...trans});
         boxLine.after(...div.children);
         app.setPosition({ height: "auto" });
     }
@@ -321,7 +319,7 @@ export class EffectTransfer {
     // Takes an array of ActiveEffectObjects and bundles it so it can be passed to applyPackagedEffects / warpgate.mutate()
     static packageEffects(validEffectsData) {
 
-        
+
         foundry.utils.setProperty(i.flags, "effective-transferral.castData", castData);
         let aeData={}
         if (MODULE.getSetting("applyIdenticalEffects")){
@@ -343,7 +341,7 @@ export class EffectTransfer {
                 return acc;
               }, {});
         }
-      
+
       EffectTransfer.debug("Prepared aeData");
 
       /* Put effects into update object */

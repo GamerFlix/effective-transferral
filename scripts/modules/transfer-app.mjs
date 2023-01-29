@@ -33,13 +33,16 @@ export class EffectTransferApp extends FormApplication {
     data.effects = this.effects.map(effect => {
       const label = effect.label;
       const id = effect._id;
+
+      const trans = foundry.utils.getProperty(effect, "flags.effective-transferral.transferrable") ?? {};
       // whether to disable self/target for the effect (can be 'undefined'):
-      const disableSelf = foundry.utils.getProperty(effect, "flags.effective-transferral.transferrable.self") === false;
-      const disableTarget = foundry.utils.getProperty(effect, "flags.effective-transferral.transferrable.target") === false;
+      const disableSelf = trans.self === false;
+      const disableTarget = trans.target === false;
       // if not disabled, default to being checked:
       const checkSelf = !disableSelf;
       const checkTarget = !disableTarget;
-      return { id, label, disableSelf, disableTarget, checkSelf, checkTarget };
+      const alwaysTransfer = !!trans.always;
+      return { id, label, disableSelf, disableTarget, checkSelf, checkTarget, alwaysTransfer };
     });
     return data;
   }
@@ -64,14 +67,26 @@ export class EffectTransferApp extends FormApplication {
 
     const form = event.target.closest("form");
     const self = [...form.querySelectorAll("[data-type='self']")].filter(s => {
-      return s.checked && !s.disabled;
+      return s.checked;
     }).map(s => s.dataset.id);
     const target = [...form.querySelectorAll("[data-type='target']")].filter(s => {
-      return s.checked && !s.disabled;
+      return s.checked;
     }).map(s => s.dataset.id);
 
     if (["ALL", "SELF"].includes(type)) await this.applyToSelf(this.packageEffects(self));
     if (["ALL", "TARGET"].includes(type)) await this.applyToTargets(this.packageEffects(target));
+  }
+
+  // Immediately transfer any effects on an item that are set to 'always', without rendering the app.
+  async immediateTransfer(effectData) {
+    const { self, target } = effectData.reduce((acc, data) => {
+      const trans = data.flags["effective-transferral"].transferrable; // always defined.
+      if (trans.self) acc.self.push(data._id);
+      if (trans.target) acc.target.push(data._id);
+      return acc;
+    }, { self: [], target: [] });
+    if(self.length) await this.applyToSelf(this.packageEffects(self));
+    if(target.length) await this.applyToTargets(this.packageEffects(target));
   }
 
   // create the Warp Gate mutation from this.effects, filtered by the given ids.
@@ -99,9 +114,9 @@ export class EffectTransferApp extends FormApplication {
               }
               return acc;
               }, {});
-              
+
         }
-        
+
     /* Put effects into update object */
     MODULE.debug(aeData)
     return { embedded: { ActiveEffect: aeData } };
