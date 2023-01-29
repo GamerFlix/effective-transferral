@@ -175,6 +175,7 @@ export class EffectTransfer {
 
     // gets the actor, item, and token from the item roll, and passes it to EffectTransferDialogue
     static async parseItemRoll(item, context, options) {
+      if(options.ignoreET === true) return;
         let actor = item?.parent;
         // if the item is not embedded it is not useful for us
         if (!actor) return;
