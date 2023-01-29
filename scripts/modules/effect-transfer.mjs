@@ -122,7 +122,7 @@ export class EffectTransfer {
         stack.deleteAll((stack) => {
             // bail if the stack is not from ET
             if (!stack.name.includes("Effective Transferral: ")) return false;
-                
+
             // Bail if stack has no effects in it
             const stackEffectIdentifiers = Object.keys(stack.delta?.embedded?.ActiveEffect);
             if (!stackEffectIdentifiers) return false;
@@ -170,6 +170,7 @@ export class EffectTransfer {
 
     // gets the actor, item, and token from the item roll, and passes it to EffectTransferDialogue
     static async parseItemRoll(item, context, options) {
+      if(options.ETIgnore === true) return;
         let actor = item?.parent;
         // if the item is not embedded it is not useful for us
         if (!actor) return;
@@ -321,7 +322,7 @@ export class EffectTransfer {
     // Takes an array of ActiveEffectObjects and bundles it so it can be passed to applyPackagedEffects / warpgate.mutate()
     static packageEffects(validEffectsData) {
 
-        
+
         foundry.utils.setProperty(i.flags, "effective-transferral.castData", castData);
         let aeData={}
         if (MODULE.getSetting("applyIdenticalEffects")){
@@ -343,7 +344,7 @@ export class EffectTransfer {
                 return acc;
               }, {});
         }
-      
+
       EffectTransfer.debug("Prepared aeData");
 
       /* Put effects into update object */
