@@ -160,8 +160,9 @@ export class EffectTransfer {
       if (!validEffectsData.length) return;
 
       const castData = { origin: itemUuid, castLevel: castLevel };
-      validEffectsData = validEffectsData.map(i => {
-        return i;
+      validEffectsData.forEach(i => {
+        const flag = {...i.flags["effective-transferral"], castData};
+        i.flags["effective-transferral"] = flag;
       });
       const item = fromUuidSync(itemUuid);
       const options = { actor, tokenDoc, validEffectsData };
