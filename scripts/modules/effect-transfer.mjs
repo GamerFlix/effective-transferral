@@ -122,7 +122,7 @@ export class EffectTransfer {
         stack.deleteAll((stack) => {
             // bail if the stack is not from ET
             if (!stack.name.includes("Effective Transferral: ")) return false;
-                
+
             // Bail if stack has no effects in it
             const stackEffectIdentifiers = Object.keys(stack.delta?.embedded?.ActiveEffect);
             if (!stackEffectIdentifiers) return false;
@@ -160,8 +160,9 @@ export class EffectTransfer {
       if (!validEffectsData.length) return;
 
       const castData = { origin: itemUuid, castLevel: castLevel };
-      validEffectsData = validEffectsData.map(i => {
-        return i;
+      validEffectsData.forEach(i => {
+        const flag = {...i.flags["effective-transferral"], castData};
+        i.flags["effective-transferral"] = flag;
       });
       const item = fromUuidSync(itemUuid);
       const options = { actor, tokenDoc, validEffectsData };
@@ -321,7 +322,7 @@ export class EffectTransfer {
     // Takes an array of ActiveEffectObjects and bundles it so it can be passed to applyPackagedEffects / warpgate.mutate()
     static packageEffects(validEffectsData) {
 
-        
+
         foundry.utils.setProperty(i.flags, "effective-transferral.castData", castData);
         let aeData={}
         if (MODULE.getSetting("applyIdenticalEffects")){
@@ -343,7 +344,7 @@ export class EffectTransfer {
                 return acc;
               }, {});
         }
-      
+
       EffectTransfer.debug("Prepared aeData");
 
       /* Put effects into update object */
