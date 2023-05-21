@@ -2,9 +2,15 @@
     "id": "effective-transferral",
     "title": "Effective Transferral",
     "description": "A simple module to transfer effects from items to actors for the DnD5e game system.",
-    "version": "1.1.!8",
+    "version": "1.4.0",
     "author": "",
-    "authors": [],
+    "authors": [
+        {
+            "name": "Flix",
+            "url": "https://github.com/GamerFlix",
+            "discord": "Flix#2215"
+        }
+    ],
     "esmodules": [
         "scripts/module.mjs"
     ],
@@ -22,8 +28,8 @@
                 "type": "module",
                 "manifest": "https://github.com/trioderegion/warpgate/releases/latest/download/module.json",
                 "compatibility": {
-                    "minimum": "1.14.!0",
-                    "verified": "1.14.!0"
+                    "minimum": "1.15.4",
+                    "verified": "1.16.2"
                 }
             }
         ],
@@ -31,17 +37,23 @@
             {
                 "id": "dnd5e",
                 "type": "system",
-                "manifest": "https://raw.githubusercontent.com/foundryvtt/dnd5e/master/system.json"
+                "manifest": "https://raw.githubusercontent.com/foundryvtt/dnd5e/master/system.json",
+                "compatibility": {
+                    "minimum": "2.2.0",
+                    "verified": "2.2.0"
+                }
             }
         ]
     },
-    "styles": [],
+    "styles": [
+        "styles/styles.css"
+    ],
     "socket": false,
     "url": "https://github.com/GamerFlix/effective-transferral",
     "manifest": "https://raw.githubusercontent.com/GamerFlix/effective-transferral/next/module.json",
-    "download": "https://github.com/GamerFlix/effective-transferral/releases/download/1.1.!8/module.zip",
+    "download": "https://github.com/GamerFlix/effective-transferral/releases/download/1.4.0/module.zip",
     "compatibility": {
-        "minimum": 10,
-        "verified": "10.278"
+        "minimum": 11,
+        "verified": "11"
     }
 }
