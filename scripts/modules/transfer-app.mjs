@@ -1,6 +1,11 @@
-import { MODULE } from "../module.mjs";
+import {MODULE} from "../module.mjs";
 
 export class EffectTransferApp extends FormApplication {
+  /**
+   * @constructor
+   * @param {Item} item           The item transferring effects.
+   * @param {object} options      Standard FormApplication options.
+   */
   constructor(item, options = {}) {
     super(item, options);
     this.item = item ?? null;
@@ -13,7 +18,7 @@ export class EffectTransferApp extends FormApplication {
   }
 
   get id() {
-    return `effective-transferral-effect-transfer-app-${this.item?.id}`;
+    return `${MODULE.id}-transfer-app-${this.item?.id}`;
   }
 
   static get defaultOptions() {
@@ -21,15 +26,16 @@ export class EffectTransferApp extends FormApplication {
       closeOnSubmit: true,
       classes: [MODULE.id, "transfer-app"],
       width: 400,
-      template: "modules/effective-transferral/templates/TransferApp.hbs",
+      template: `modules/${MODULE.id}/templates/TransferApp.hbs`,
       height: "auto"
     });
   }
 
-  get title(){
-    return game.i18n.format("ET.Dialog.Title", {name: this.item.name});
+  get title() {
+    return game.i18n.format("ET.Dialog.Title", {name: this.itemName});
   }
 
+  /** @override */
   async getData() {
     const data = await super.getData();
     data.effects = this.effects.map(effect => {
@@ -48,12 +54,17 @@ export class EffectTransferApp extends FormApplication {
     return data;
   }
 
-  // appends a number to mutation names to make it unique.
-  static _getValidMutationName(tokenDoc, itemName){
+  /**
+   * If the name of the mutation is not unique, append a number to it.
+   * @param {TokenDocument} tokenDoc      The token document that is the target of the mutation.
+   * @param {string} itemName             The current attempted name for the mutation.
+   * @returns {string}                    A unique name for the mutation to apply to the token.
+   */
+  static _getValidMutationName(tokenDoc, itemName) {
     let name = `Effective Transferral: ${itemName}`;
     let hasName = !!warpgate.mutationStack(tokenDoc).getName(name);
     let i = 1;
-    while(!!hasName){
+    while (!!hasName) {
       i++;
       name = `Effective Transferral: ${itemName} (${i})`;
       hasName = !!warpgate.mutationStack(tokenDoc).getName(name);
@@ -61,6 +72,7 @@ export class EffectTransferApp extends FormApplication {
     return name;
   }
 
+  /** @override */
   async _updateObject(event, formData) {
     const button = event.submitter;
     const type = button.dataset.type;
@@ -72,52 +84,70 @@ export class EffectTransferApp extends FormApplication {
     if (["ALL", "TARGET"].includes(type)) await this.applyToTargets(this.packageEffects(acc.target));
   }
 
-  // Immediately transfer any effects on an item that are set to 'always', without rendering the app.
+  /**
+   * Immediately transfer any effects on an item that are set to 'always', without rendering the app.
+   * @param {object[]} effectData     An array of effect data to transfer.
+   */
   async immediateTransfer(effectData) {
-    const { self, target } = effectData.reduce((acc, data) => {
-      const trans = data.flags["effective-transferral"].transferrable; // always defined.
+    const {self, target} = effectData.reduce((acc, data) => {
+      const trans = data.flags[MODULE.id].transferrable; // always defined.
       if (trans.self) acc.self.push(data._id);
       if (trans.target) acc.target.push(data._id);
       return acc;
-    }, { self: [], target: [] });
-    if(self.length) await this.applyToSelf(this.packageEffects(self));
-    if(target.length) await this.applyToTargets(this.packageEffects(target));
+    }, {self: [], target: []});
+    if (self.length) await this.applyToSelf(this.packageEffects(self));
+    if (target.length) await this.applyToTargets(this.packageEffects(target));
   }
 
-  // create the Warp Gate mutation from this.effects, filtered by the given ids.
+  /**
+   * Construct the warpgate mutation from `this.effects`, filtered by the given ids.
+   * @param {string[]} ids      An array of ids for the effects.
+   * @returns {object}          The end warpgate mutation.
+   */
   packageEffects(ids) {
+    const aeData = {};
+    const identical = MODULE.getSetting("applyIdenticalEffects");
+    MODULE.debug("THIS.EFFECTS:", this.effects);
 
-    let aeData={}
-        if (MODULE.getSetting("applyIdenticalEffects")){
-            MODULE.debug(this.effects)
-            aeData = foundry.utils.duplicate(this.effects).reduce((acc, ae) => {
-                if (ids.includes(ae._id)){
-                  let mutationKey=foundry.utils.randomID()
-                  foundry.utils.setProperty(ae, "flags.effective-transferral.mutationKey", mutationKey);
-                  acc[mutationKey] = ae;
-                  for(const [key, val] of Object.entries(ae.duration ?? {})){
-                    if(val === null) delete ae.duration[key];
-                  }
-                }
-                return acc;
-              }, {});
-        }else{
-            aeData = foundry.utils.duplicate(this.effects).reduce((acc, ae) => {
-              if (ids.includes(ae._id)) acc[ae.name] = ae;
-              for(const [key, val] of Object.entries(ae.duration ?? {})){
-                if(val === null) delete ae.duration[key];
-              }
-              return acc;
-              }, {});
-
+    if (identical) {
+      foundry.utils.deepClone(this.effects).reduce((acc, ae) => {
+        if (ids.includes(ae._id)) {
+          let mutationKey = foundry.utils.randomID();
+          foundry.utils.setProperty(ae, `flags.${MODULE.id}.mutationKey`, mutationKey);
+          acc[mutationKey] = ae;
+          this._deleteNullDurations(ae.duration);
         }
+        return acc;
+      }, aeData);
+    } else {
+      foundry.utils.deepClone(this.effects).reduce((acc, ae) => {
+        if (ids.includes(ae._id)) acc[ae.name] = ae;
+        this._deleteNullDurations(ae.duration);
+        return acc;
+      }, aeData);
+    }
 
     /* Put effects into update object */
-    MODULE.debug(aeData)
-    return { embedded: { ActiveEffect: aeData } };
+    MODULE.debug("AEDATA", aeData);
+    return {embedded: {ActiveEffect: aeData}};
   }
 
-  // either warpgate.mutate(this.token) or this.actor.createEmbeddedDocuments().
+  /**
+   * Mutate the duration object of an active effect's data, deleting any null values.
+   * @param {object} duration     The duration object.
+   */
+  _deleteNullDurations(duration) {
+    for (const [key, val] of Object.entries(duration ?? {})) {
+      if (val === null) delete duration[key];
+    }
+  }
+
+  /**
+   * Apply the effects to the owner of the item. If a token exists, perform a
+   * warpgate mutation, otherwise create embedded documents normally.
+   * @param {object} updates                    The warpgate `updates` object.
+   * @returns {MutationData|ActiveEffect[]}     Either see warpgate#mutate, otherwise an array of created effects.
+   */
   async applyToSelf(updates) {
     if (this.tokenDoc) {
       return this.applyPackagedEffects(this.tokenDoc, updates);
@@ -126,7 +156,10 @@ export class EffectTransferApp extends FormApplication {
     }
   }
 
-  // warpgate.mutate() the user's targets.
+  /**
+   * Apply the effects to each of the user's targets through warpgate.
+   * @param {object} updates      The warpgate `updates` object.
+   */
   async applyToTargets(updates) {
     const targets = game.user.targets;
     for (const target of targets) {
@@ -134,25 +167,31 @@ export class EffectTransferApp extends FormApplication {
     }
   }
 
-  // Mutate the tokenDocument with the updates object.
+  /**
+   * Mutate the token document with the updates object.
+   * @param {TokenDocument} target      The target of the mutation.
+   * @param {object} updates            The warpgate `updates` object.
+   * @returns {MutationData}            See warpgate#mutate.
+   */
   async applyPackagedEffects(target, updates) {
     if (!target) return // Don't do anything if we don't have a token
-    MODULE.debug("updates",updates)
-    if(foundry.utils.isEmpty(updates.embedded.ActiveEffect)) return MODULE.debug("Empty mutation cancelling application",updates.embedded.ActiveEffect)
-    //const comparisonKey = MODULE.getSetting("applyIdenticalEffects") ? "flags.effective-transferral.mutationKey" : "name";
+    MODULE.debug("updates", updates);
+    if (foundry.utils.isEmpty(updates.embedded.ActiveEffect)) {
+      return MODULE.debug("Empty mutation cancelling application", updates.embedded.ActiveEffect);
+    }
     const comparisonKey = MODULE.getSetting("applyIdenticalEffects") ? "id" : "name";
-    const warpgateObject={
-      name: EffectTransferApp._getValidMutationName(target,this.itemName),
+    const warpgateObject = {
+      name: EffectTransferApp._getValidMutationName(target, this.itemName),
       description: game.i18n.format("ET.Dialog.Mutate.Description", {
         userName: game.user.name,
         itemName: this.itemName,
         tokenName: this.tokenDoc?.name
       }),
-      comparisonKeys: { ActiveEffect: comparisonKey },
+      comparisonKeys: {ActiveEffect: comparisonKey},
       permanent: MODULE.getSetting("permanentTransfer")
-    }
+    };
 
-    MODULE.debug({target,updates,warpgateObject})
-    await warpgate.mutate(target, foundry.utils.duplicate(updates), {}, warpgateObject);
+    MODULE.debug({target, updates, warpgateObject});
+    return warpgate.mutate(target, foundry.utils.deepClone(updates), {}, warpgateObject);
   }
 }
