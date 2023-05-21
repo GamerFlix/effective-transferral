@@ -31,7 +31,7 @@ export class EffectTransferApp extends FormApplication {
     const data = await super.getData();
     data.self = this.self;
     data.effects = this.effects.map(effect => {
-      const label = effect.label;
+      const label = effect.name;
       const id = effect._id;
 
       const trans = foundry.utils.getProperty(effect, "flags.effective-transferral.transferrable") ?? {};
@@ -108,7 +108,7 @@ export class EffectTransferApp extends FormApplication {
               }, {});
         }else{
             aeData = foundry.utils.duplicate(this.effects).reduce((acc, ae) => {
-              if (ids.includes(ae._id)) acc[ae.label] = ae;
+              if (ids.includes(ae._id)) acc[ae.name] = ae;
               for(const [key, val] of Object.entries(ae.duration ?? {})){
                 if(val === null) delete ae.duration[key];
               }
@@ -144,8 +144,8 @@ export class EffectTransferApp extends FormApplication {
     if (!target) return // Don't do anything if we don't have a token
     MODULE.debug("updates",updates)
     if(foundry.utils.isEmpty(updates.embedded.ActiveEffect)) return MODULE.debug("Empty mutation cancelling application",updates.embedded.ActiveEffect)
-    //const comparisonKey = MODULE.getSetting("applyIdenticalEffects") ? "flags.effective-transferral.mutationKey" : "label";
-    const comparisonKey = MODULE.getSetting("applyIdenticalEffects") ? "id" : "label";
+    //const comparisonKey = MODULE.getSetting("applyIdenticalEffects") ? "flags.effective-transferral.mutationKey" : "name";
+    const comparisonKey = MODULE.getSetting("applyIdenticalEffects") ? "id" : "name";
     const warpgateObject={
       name: EffectTransferApp._getValidMutationName(target,this.itemName),
       description: game.i18n.format("ET.Dialog.Mutate.Description", {
