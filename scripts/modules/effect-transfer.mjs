@@ -214,12 +214,11 @@ export class EffectTransfer {
         }
     }
 
-    static async EffectConfiguration(app, html, hookData) {
-        let tickBox = html[0].querySelector('[name="transfer"]');
-        const boxLine = tickBox?.closest('div.form-group');
+    static async EffectConfiguration(app, html) {
+        const boxLine = html[0].querySelector('[name="transfer"]')?.closest('div.form-group');
         if (!boxLine) return;
 
-        const data = hookData.document.flags[MODULE.id] ?? {};
+        const data = app.document.flags[MODULE.id] ?? {};
         const blockers = data.transferBlock ?? {};
         const trans = data.transferrable ?? {self: true, target: true};
 
