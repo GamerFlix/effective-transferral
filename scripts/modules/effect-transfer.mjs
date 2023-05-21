@@ -226,13 +226,17 @@ export class EffectTransfer {
         const boxLine = tickBox?.closest('div.form-group');
         if (!boxLine) return;
 
-        const data = foundry.utils.getProperty(hookData, "effect.flags.effective-transferral") ?? {};
-        const blockers = data.transferBlock ?? {button: false, chat: false, displayCard: false};
-        const trans = data.transferrable ?? {self: true, target: true, always: false};
+        const data = hookData.document.flags[MODULE.id] ?? {};
+        const blockers = data.transferBlock ?? {};
+        const trans = data.transferrable ?? {self: true, target: true};
 
         const div = document.createElement("div");
-        div.innerHTML = await renderTemplate(`modules/effective-transferral/templates/EffectConfig.hbs`, {...blockers, ...trans});
-        boxLine.after(...div.children);
+        div.innerHTML = await renderTemplate(`modules/${MODULE.id}/templates/EffectConfig.hbs`, {
+          ...blockers,
+          ...trans,
+          module: MODULE.id
+        });
+        boxLine.after(div.firstElementChild);
         app.setPosition({ height: "auto" });
     }
 

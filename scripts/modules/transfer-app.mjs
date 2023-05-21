@@ -19,31 +19,32 @@ export class EffectTransferApp extends FormApplication {
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
       closeOnSubmit: true,
-      classes: ["effective-transferral"],
+      classes: [MODULE.id, "transfer-app"],
       width: 400,
       template: "modules/effective-transferral/templates/TransferApp.hbs",
-      height: "auto",
-      title: game.i18n.localize("ET.Dialog.Title")
+      height: "auto"
     });
+  }
+
+  get title(){
+    return game.i18n.format("ET.Dialog.Title", {name: this.item.name});
   }
 
   async getData() {
     const data = await super.getData();
-    data.self = this.self;
     data.effects = this.effects.map(effect => {
-      const label = effect.name;
-      const id = effect._id;
-
-      const trans = foundry.utils.getProperty(effect, "flags.effective-transferral.transferrable") ?? {};
-      // whether to disable self/target for the effect (can be 'undefined'):
-      const disableSelf = trans.self === false;
-      const disableTarget = trans.target === false;
-      // if not disabled, default to being checked:
-      const checkSelf = !disableSelf;
-      const checkTarget = !disableTarget;
-      const alwaysTransfer = !!trans.always;
-      return { id, label, disableSelf, disableTarget, checkSelf, checkTarget, alwaysTransfer };
+      const trans = effect.flags[MODULE.id]?.transferrable ?? {};
+      return {
+        id: effect._id,
+        name: effect.name,
+        description: effect.description,
+        disableSelf: (trans.self === false) || trans.always,
+        disableTar: (trans.target === false) || trans.always,
+        alwaysTransfer: trans.always
+      };
     });
+    data.self = this.self && data.effects.some(e => !e.disableSelf);
+    data.module = MODULE.id;
     return data;
   }
 
@@ -62,19 +63,13 @@ export class EffectTransferApp extends FormApplication {
 
   async _updateObject(event, formData) {
     const button = event.submitter;
-    if (button?.type !== "submit") return;
     const type = button.dataset.type;
 
-    const form = event.target.closest("form");
-    const self = [...form.querySelectorAll("[data-type='self']")].filter(s => {
-      return s.checked;
-    }).map(s => s.dataset.id);
-    const target = [...form.querySelectorAll("[data-type='target']")].filter(s => {
-      return s.checked;
-    }).map(s => s.dataset.id);
+    const acc = {self: [], target: []};
+    this.form.querySelectorAll("[data-type]:checked").forEach(box => acc[box.dataset.type].push(box.dataset.id));
 
-    if (["ALL", "SELF"].includes(type)) await this.applyToSelf(this.packageEffects(self));
-    if (["ALL", "TARGET"].includes(type)) await this.applyToTargets(this.packageEffects(target));
+    if (["ALL", "SELF"].includes(type)) await this.applyToSelf(this.packageEffects(acc.self));
+    if (["ALL", "TARGET"].includes(type)) await this.applyToTargets(this.packageEffects(acc.target));
   }
 
   // Immediately transfer any effects on an item that are set to 'always', without rendering the app.

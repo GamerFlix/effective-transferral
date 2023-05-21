@@ -1,11 +1,11 @@
 import { EffectTransfer } from "./effect-transfer.mjs";
 import { MODULE } from "../module.mjs";
 export class api {
-    
+
     static register() {
         api.globals();
     }
-    
+
     static globals(){
         globalThis.ET={
             // Considering removal of these
@@ -25,7 +25,7 @@ export class api {
             effectTransferTrigger: EffectTransfer.EffectTransferTrigger
         }
     }
-    
+
     // Takes an array of ActiveEffectObjects and bundles it so it can be passed to applyPackagedEffects / warpgate.mutate()
     static packageEffects(validEffectsData) {
         let aeData={}
@@ -56,7 +56,7 @@ export class api {
 
     //Takes a token doc, effects prepackaged by packageEffects and optionally an item name to apply effects
     static async applyPackagedEffects(tokenDoc, packagedEffects, itemName = game.i18n.format("ET.applyEffect.defaultName")) {
-        const comparisonKey = MODULE.getSetting("applyIdenticalEffects") ? "id" : 'label'
+        const comparisonKey = MODULE.getSetting("applyIdenticalEffects") ? "id" : "label";
         await warpgate.mutate(tokenDoc, packagedEffects, {}, {
           name: `Effective Transferral: ${itemName}`,
           description: game.i18n.format("ET.Dialog.Mutate.Description", {
