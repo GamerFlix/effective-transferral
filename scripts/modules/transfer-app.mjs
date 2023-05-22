@@ -12,9 +12,15 @@ export class EffectTransferApp extends FormApplication {
     this.itemName = item?.name ?? game.i18n.format("ET.applyEffect.defaultName");
     this.actor = options.actor;
     this.tokenDoc = options.tokenDoc;
-    this.effects = options.validEffectsData;
+    this.effects = foundry.utils.deepClone(options.validEffectsData);
     // whether to show the 'Self' related stuff
     this.self = options.tokenDoc ?? options.actor ?? false;
+
+    // Whether to forcefully override the 'origin' field with the uuid of this.item.
+    this.overrideOrigin = game.settings.get(MODULE.id, "overrideOrigin");
+    if(this.overrideOrigin){
+      this.effects.forEach(e => e.origin = this.item.uuid);
+    }
   }
 
   get id() {
