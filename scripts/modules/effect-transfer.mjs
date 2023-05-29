@@ -21,24 +21,26 @@ export class EffectTransfer {
 
     static NAME = "EffectTransfer";
 
-    // Get the token document of a given actor
-    static tokenDocFromActor(actor) {
-        return actor?.token?.document ?? actor?.getActiveTokens(false, true)[0];
-        // getActiveTokens(linked=false,document=false)
-    }
+  /**
+   * Get a token document from an actor.
+   * @param {Actor} actor         An actor.
+   * @returns {TokenDocument}     The actor's token document, if any.
+   */
+  static tokenDocFromActor(actor) {
+    return actor?.token ?? actor?.getActiveTokens(false, true)[0];
+  }
 
     //Block transfer via a given method
     static async setBlock(effect, boolean, type) {
         if (effect?.parent?.parent) {
-            ui.notifications.error(game.i18n.localize("ET.doubleEmbedded.error"));
-            return undefined;
+          return ui.notifications.error("ET.doubleEmbedded.error", {localize: true});
         }
-        return effect.setFlag("effective-transferral", `transferBlock.${type}`, boolean)
+        return effect.setFlag(MODULE.id, `transferBlock.${type}`, boolean);
     }
 
     //Check whether transfer via a given method is possible
     static getBlock(effect, type) {
-        return !!foundry.utils.getProperty(effect, `flags.effective-transferral.transferBlock.${type}`)
+        return !!foundry.utils.getProperty(effect, `flags.${MODULE.id}.transferBlock.${type}`)
     }
 
     // gets the value of the displayCard flag in transferBlock, returning false if undefined.
@@ -70,8 +72,6 @@ export class EffectTransfer {
     static async setButtonBlock(effect, boolean) {
         return EffectTransfer.setBlock(effect, boolean, "button")
     }
-
-
 
     // Toggleable console.log()
     static async debug() {
@@ -131,9 +131,9 @@ export class EffectTransfer {
 
             // Get the thing we need to match by
             if (matchName){
-                presentEffectIdentifiers=tokenDoc.actor.effects.map(i => i.label);
+                presentEffectIdentifiers=tokenDoc.actor.effects.map(i => i.name);
             }else{
-                presentEffectIdentifiers=tokenDoc.actor.effects.map(i=>i.flags?.["effective-transferral"]?.mutationKey)
+                presentEffectIdentifiers=tokenDoc.actor.effects.map(i => i.flags[MODULE.id]?.mutationKey);
             }
             EffectTransfer.debug(presentEffectIdentifiers);
 
@@ -150,7 +150,7 @@ export class EffectTransfer {
             // If none of the effects inside the mutationstack are still present delete the stack
             return true;
         });
-        await stack.commit();
+        return stack.commit();
     }
 
     // pops up the dialogue and calls warpgate to apply effects
@@ -158,16 +158,11 @@ export class EffectTransfer {
       // Check whether we actually have effects on the item
       if (!validEffectsData.length) return;
 
-      const castData = { origin: itemUuid, castLevel: castLevel };
-      validEffectsData.forEach(i => {
-        const flag = {...i.flags["effective-transferral"], castData};
-        i.flags["effective-transferral"] = flag;
-      });
+      const castData = {origin: itemUuid, castLevel: castLevel};
+      validEffectsData.forEach(i => foundry.utils.setProperty(i.flags, `${MODULE.id}.castData`, castData));
       const item = fromUuidSync(itemUuid);
-      const options = { actor, tokenDoc, validEffectsData };
-      const allAlways = validEffectsData.every(data => {
-        return data.flags?.["effective-transferral"]?.transferrable?.always === true;
-      });
+      const options = {actor, tokenDoc, validEffectsData};
+      const allAlways = validEffectsData.every(data => data.flags[MODULE.id].transferrable?.always === true);
       const app = new EffectTransferApp(item, options);
       if(allAlways) return app.immediateTransfer(validEffectsData);
       return app.render(true);
@@ -176,63 +171,64 @@ export class EffectTransfer {
     // gets the actor, item, and token from the item roll, and passes it to EffectTransferDialogue
     static async parseItemRoll(item, context, options) {
       if(options.ignoreET === true) return;
-        let actor = item?.parent;
+        const actor = item.actor;
         // if the item is not embedded it is not useful for us
         if (!actor) return;
 
-        let tokenDoc = EffectTransfer.tokenDocFromActor(actor);
+        const tokenDoc = EffectTransfer.tokenDocFromActor(actor);
         EffectTransfer.debug("Function used to filter:", EffectTransfer.isEligible("chat"));
         const validEffects = item.effects.filter(EffectTransfer.isEligible("chat"));
         EffectTransfer.debug("Filtered effects:", validEffects);
 
         // If we have nothing to transfer just exit
-        if (validEffects.length === 0) return;
+        if (!validEffects.length) return;
 
         EffectTransfer.debug("Effectarray has a length greater than 0", validEffects);
         const validEffectsData = validEffects.map(e => e.toObject());
-        return EffectTransfer.effectTransferDialogue(actor, tokenDoc, validEffectsData, item?.system?.level, item?.uuid);
+        return EffectTransfer.effectTransferDialogue(actor, tokenDoc, validEffectsData, item.system.level, item.uuid);
     }
 
     static async EffectTransferTrigger(item, type = "button", castLevel = undefined) {
         EffectTransfer.debug(item);
-        if (!castLevel) castLevel = item.system.level
-        const actor = item.parent;
-        const tokenDoc = EffectTransfer.tokenDocFromActor(actor);
+        if (!castLevel) castLevel = item.system.level;
+        const tokenDoc = EffectTransfer.tokenDocFromActor(item.actor);
         const validEffects = item.effects.filter(EffectTransfer.isEligible(type));
-        if (validEffects.length === 0) {
-            ui.notifications.warn(game.i18n.localize("ET.Button.warn"));
-            return;
+        if (!validEffects.length) {
+            return ui.notifications.warn("ET.Button.warn", {localize: true});
         }
         const validEffectsData = validEffects.map(e => e.toObject());
-        return EffectTransfer.effectTransferDialogue(actor, tokenDoc, validEffectsData, castLevel, item.uuid);
+        return EffectTransfer.effectTransferDialogue(item.actor, tokenDoc, validEffectsData, castLevel, item.uuid);
     }
 
     // Add the effect transfer button to the item sheet if the item has a non-transfer effect
     static async EffectTransferButton(app, array) {
         // Only add a button if the item has eligible effects
-        if (app.object.effects.filter(EffectTransfer.isEligible("button")).length > 0) {
+        if (app.document.effects.some(EffectTransfer.isEligible("button"))) {
             const transferButton = {
                 class: "EffectTransfer",
                 icon: "fas fa-exchange-alt", //https://fontawesome.com/v5.15/icons
                 label: MODULE.getSetting("hideButtonText") ? "" : game.i18n.localize("ET.Button.Label"),
-                onclick: () => EffectTransfer.EffectTransferTrigger(app.object)
+                onclick: () => EffectTransfer.EffectTransferTrigger(app.document)
             }
             array.unshift(transferButton);
         }
     }
 
-    static async EffectConfiguration(app, html, hookData) {
-        let tickBox = html[0].querySelector('[name="transfer"]');
-        const boxLine = tickBox?.closest('div.form-group');
+    static async EffectConfiguration(app, html) {
+        const boxLine = html[0].querySelector('[name="transfer"]')?.closest('div.form-group');
         if (!boxLine) return;
 
-        const data = foundry.utils.getProperty(hookData, "effect.flags.effective-transferral") ?? {};
-        const blockers = data.transferBlock ?? {button: false, chat: false, displayCard: false};
-        const trans = data.transferrable ?? {self: true, target: true, always: false};
+        const data = app.document.flags[MODULE.id] ?? {};
+        const blockers = data.transferBlock ?? {};
+        const trans = data.transferrable ?? {self: true, target: true};
 
         const div = document.createElement("div");
-        div.innerHTML = await renderTemplate(`modules/effective-transferral/templates/EffectConfig.hbs`, {...blockers, ...trans});
-        boxLine.after(...div.children);
+        div.innerHTML = await renderTemplate(`modules/${MODULE.id}/templates/EffectConfig.hbs`, {
+          ...blockers,
+          ...trans,
+          module: MODULE.id
+        });
+        boxLine.after(div.firstElementChild);
         app.setPosition({ height: "auto" });
     }
 
@@ -241,8 +237,8 @@ export class EffectTransfer {
         if (!!MODULE.getSetting("neverDisplayCardTransfer")) return;
 
         // if no valid effects, don't create button.
-        const validEffects = item.effects.filter(EffectTransfer.isEligible("displayCard"));
-        if (!validEffects.length) return;
+        const validEffects = item.effects.some(EffectTransfer.isEligible("displayCard"));
+        if (!validEffects) return;
 
         // create button.
         const template = document.createElement("DIV");
@@ -252,54 +248,54 @@ export class EffectTransfer {
         transferButton.setAttribute("data-uuid", item.uuid);
         transferButton.setAttribute("data-actor-uuid", item.parent.uuid);
         transferButton.setAttribute("data-action", "transfer-effects");
-        transferButton.setAttribute("data-cast-level", item.system?.level)
+        transferButton.setAttribute("data-cast-level", item.system?.level);
 
-        transferButton.name = "ET-TRANSFER-BUTTON";
         transferButton.innerText = game.i18n.localize("ET.Button.Label");
         buttonDiv.appendChild(transferButton);
         messageData.content = template.innerHTML;
     }
 
-    static setupChatListeners = (_, html) => {
-        html[0].addEventListener("click", (event) => {
-            return EffectTransfer.triggerTransferFromChatLog(event);
+    static setupChatListeners = (message, html) => {
+        html[0].querySelectorAll("[data-action='transfer-effects']").forEach(n => {
+            n.addEventListener("click", EffectTransfer.triggerTransferFromChatLog);
         });
     }
 
-    static triggerTransferFromChatLog = async (event) => {
-        let button = event.target?.closest("button[name='ET-TRANSFER-BUTTON']");
-        if (!button) return;
-        EffectTransfer.debug("This is the button dataset:", button.dataset)
+    /**
+     * Handle clicking a transfer button on a chat message.
+     * @param {PointerEvent} event      The initiating click event.
+     */
+    static async triggerTransferFromChatLog(event) {
+        const button = event.currentTarget;
+        const data = button.dataset;
+        EffectTransfer.debug("This is the button dataset:", data);
         button.disabled = false;
-        let itemUuid = button.dataset.uuid
-        let castLevel = button.dataset.castLevel
-        if (typeof castLevel === "string") castLevel = Number(castLevel)
-        EffectTransfer.debug("itemUuid:", itemUuid, "castLevel:", castLevel)
-        let item = fromUuidSync(itemUuid);
+        const castLevel = Number.isNumeric(data.castLevel) ? Number(data.castLevel) : data.castLevel;
+        EffectTransfer.debug("itemUuid:", data.uuid, "castLevel:", castLevel);
+        const item = fromUuidSync(data.uuid);
         if (!item) {
-            const messageId = button.closest("li.chat-message")?.dataset.messageId;
-            const message = game.messages.get(messageId);
-            const itemData = message.getFlag("dnd5e", "itemData");
+            const messageId = button.closest("[data-message-id]").dataset.messageId;
+            const itemData = game.messages.get(messageId).flags.dnd5e.itemData;
 
             // filter effects and bail if there's nothing to do
-            let validEffectsData = itemData.effects.filter(EffectTransfer.isEligible("displayCard"))
-            EffectTransfer.debug("Data of valid effects from chat button", validEffectsData)
-            if (validEffectsData.length === 0) return ui.notifications.warn(game.i18n.localize("ET.Button.warn"))
+            const validEffectsData = itemData.effects.filter(EffectTransfer.isEligible("displayCard"));
+            EffectTransfer.debug("Data of valid effects from chat button", validEffectsData);
+            if (!validEffectsData.length) return ui.notifications.warn("ET.Button.warn", {localize: true});
 
-            let itemHolder = fromUuidSync(button.dataset.actorUuid)
+            const itemHolder = fromUuidSync(data.actorUuid);
 
             // Initiliaze variables
-            let actor
-            let tokenDoc
+            let actor;
+            let tokenDoc;
             if (itemHolder instanceof Actor) {
-                actor = itemHolder
-                tokenDoc = EffectTransfer.tokenDocFromActor(itemHolder)
+                actor = itemHolder;
+                tokenDoc = EffectTransfer.tokenDocFromActor(itemHolder);
             } else if (itemHolder instanceof TokenDocument) {
                 tokenDoc = itemHolder;
-                actor = itemHolder.actor
+                actor = itemHolder.actor;
             }
 
-            return EffectTransfer.effectTransferDialogue(actor, tokenDoc, validEffectsData, castLevel, itemUuid)
+            return EffectTransfer.effectTransferDialogue(actor, tokenDoc, validEffectsData, castLevel, data.uuid);
         } else {
             return EffectTransfer.EffectTransferTrigger(item, "displayCard", castLevel);
         }
@@ -311,7 +307,6 @@ export class EffectTransfer {
         Hooks.on("renderActiveEffectConfig", EffectTransfer.EffectConfiguration);
         Hooks.on("deleteActiveEffect", EffectTransfer.cleanUp);
         Hooks.on("dnd5e.preDisplayCard", EffectTransfer.createChatLogButtons);
-        Hooks.on("renderChatLog", EffectTransfer.setupChatListeners);
-        Hooks.on("renderChatPopout", EffectTransfer.setupChatListeners);
+        Hooks.on("renderChatMessage", EffectTransfer.setupChatListeners);
     }
 }

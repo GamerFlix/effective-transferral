@@ -1,43 +1,42 @@
-<form class="effective-transferral">
-  <p>{{{localize "ET.Dialog.Instructions.Token"}}}</p>
+<form class="{{module}}">
+  <span class="instruction">{{{localize "ET.Dialog.Instructions.Token"}}}</span>
   <div class="effects">
     <div class="header">
-      <div>{{localize "EFFECT.Label"}}</div>
+      <span>{{localize "EFFECT.Name"}}</span>
       {{#if self}}
-      <div>{{localize "DND5E.TargetSelf"}}</div>
+      <span>{{localize "DND5E.TargetSelf"}}</span>
       {{/if}}
-      <div>{{localize "DND5E.Target"}}</div>
+      <span>{{localize "DND5E.Target"}}</span>
     </div>
     <div class="transferrable-effects">
-      {{#each effects as |e|}}
+      {{#each effects}}
       <div class="effect">
-        <div>{{e.label}}</div>
+        <span data-tooltip="{{description}}" data-tooltip-direction="LEFT">{{name}}</span>
         {{#if ../self}}
-        <input type="checkbox" data-type="self" data-id="{{e.id}}" {{checked e.checkSelf}} {{disabled (or e.disableSelf e.alwaysTransfer)}}>
+        <input type="checkbox" data-type="self" data-id="{{id}}" {{checked (not disableSelf)}} {{disabled disableSelf}}>
         {{/if}}
-        <input type="checkbox" data-type="target" data-id="{{e.id}}" {{checked e.checkTarget}} {{disabled (or e.disableTarget e.alwaysTransfer)}}>
+        <input type="checkbox" data-type="target" data-id="{{id}}" {{checked (not disableTar)}} {{disabled disableTar}}>
       </div>
       {{/each}}
     </div>
   </div>
-  {{#if self}}
   <div class="buttons">
-  {{else}}
-  <div class="buttons-alt">
-  {{/if}}
     {{#if self}}
     <button type="submit" data-type="ALL">
       <i class="fa-solid fa-check"></i> {{localize "ET.Dialog.Button.Apply"}}
     </button>
-    <button type="submit" data-type="SELF">
-      <i class="fa-solid fa-user"></i> {{localize "ET.Dialog.Button.Self"}}
-    </button>
-    {{/if}}
+    <div class="specifics">
+      <button type="submit" data-type="SELF">
+        <i class="fa-solid fa-user"></i> {{localize "ET.Dialog.Button.Self"}}
+      </button>
+      <button type="submit" data-type="TARGET">
+        <i class="fa-solid fa-bullseye"></i> {{localize "ET.Dialog.Button.Targets"}}
+      </button>
+    </div>
+    {{else}}
     <button type="submit" data-type="TARGET">
       <i class="fa-solid fa-bullseye"></i> {{localize "ET.Dialog.Button.Targets"}}
     </button>
-    <button type="cancel">
-      <i class="fa-solid fa-times"></i> {{localize "Cancel"}}
-    </button>
+    {{/if}}
   </div>
 </form>

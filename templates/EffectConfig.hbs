@@ -1,36 +1,36 @@
-<div class="effective-transferral">
-  <h4 class="title">{{localize "ET.AE.config.title"}}</h4>
+<fieldset class="{{module}}">
+  <legend>{{localize "ET.AE.config.title"}}</legend>
   <div class="form-group">
     <label data-tooltip="ET.AE.config.buttonBlockTooltip">{{localize "ET.AE.config.buttonBlock"}}</label>
     <div class="form-fields">
-      <input type="checkbox" name="flags.effective-transferral.transferBlock.button" {{checked button}}>
+      <input type="checkbox" name="flags.{{module}}.transferBlock.button" {{checked button}}>
     </div>
   </div>
   <div class="form-group">
     <label data-tooltip="ET.AE.config.chatBlockTooltip">{{localize "ET.AE.config.chatBlock"}}</label>
     <div class="form-fields">
-      <input type="checkbox" name="flags.effective-transferral.transferBlock.chat" {{checked chat}}>
+      <input type="checkbox" name="flags.{{module}}.transferBlock.chat" {{checked chat}}>
     </div>
   </div>
   <div class="form-group">
     <label data-tooltip="ET.AE.config.displayCardBlockTooltip">{{localize "ET.AE.config.displayCardBlock"}}</label>
     <div class="form-fields">
-      <input type="checkbox" name="flags.effective-transferral.transferBlock.displayCard" {{checked displayCard}}>
+      <input type="checkbox" name="flags.{{module}}.transferBlock.displayCard" {{checked displayCard}}>
     </div>
   </div>
   <div class="form-group">
     <label data-tooltip="ET.AE.config.transferTargetsTooltip">{{localize "ET.AE.config.transferTargets"}}</label>
     <div class="form-fields">
       <label for="transSelf">{{localize "DND5E.TargetSelf"}}</label>
-      <input type="checkbox" name="flags.effective-transferral.transferrable.self" id="transSelf" {{checked self}}>
+      <input type="checkbox" name="flags.{{module}}.transferrable.self" id="transSelf" {{checked self}}>
       <label for="transTarget">{{localize "DND5E.Target"}}</label>
-      <input type="checkbox" name="flags.effective-transferral.transferrable.target" id="transTarget" {{checked target}}>
+      <input type="checkbox" name="flags.{{module}}.transferrable.target" id="transTarget" {{checked target}}>
     </div>
   </div>
   <div class="form-group">
     <label data-tooltip="ET.AE.config.alwaysTransferTooltip">{{localize "ET.AE.config.alwaysTransfer"}}</label>
     <div class="form-fields">
-      <input type="checkbox" name="flags.effective-transferral.transferrable.always" id="transAlways" {{checked always}}>
+      <input type="checkbox" name="flags.{{module}}.transferrable.always" id="transAlways" {{checked always}}>
     </div>
   </div>
-</div>
+</fieldset>
