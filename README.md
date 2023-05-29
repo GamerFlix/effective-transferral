@@ -6,6 +6,7 @@ For v9 the last known compatible version of warpgate is [1.13.6](https://github.
 
 For v10 and v11 the last known compatible version of warpgate is [1.16.2](https://github.com/trioderegion/warpgate/releases/tag/1.16.2). Note that warpgate version 1.16.2 is not fully functional on v11, however the issues it has do not impact Effective Transferral.
 
+While the images below differ slightly from the styling found in current releases the layout and functionality remains identical.
 
 https://user-images.githubusercontent.com/62909799/205397402-62fc17ca-98e7-4fe0-9151-8cf505bd6917.mp4
 
