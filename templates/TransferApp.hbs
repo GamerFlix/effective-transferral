@@ -22,19 +22,19 @@
   </div>
   <div class="buttons">
     {{#if self}}
-    <button type="submit" data-type="ALL">
+    <button type="button" data-type="ALL">
       <i class="fa-solid fa-check"></i> {{localize "ET.Dialog.Button.Apply"}}
     </button>
     <div class="specifics">
-      <button type="submit" data-type="SELF">
+      <button type="button" data-type="SELF">
         <i class="fa-solid fa-user"></i> {{localize "ET.Dialog.Button.Self"}}
       </button>
-      <button type="submit" data-type="TARGET">
+      <button type="button" data-type="TARGET">
         <i class="fa-solid fa-bullseye"></i> {{localize "ET.Dialog.Button.Targets"}}
       </button>
     </div>
     {{else}}
-    <button type="submit" data-type="TARGET">
+    <button type="button" data-type="TARGET">
       <i class="fa-solid fa-bullseye"></i> {{localize "ET.Dialog.Button.Targets"}}
     </button>
     {{/if}}
