@@ -34,5 +34,7 @@
     "setting.permanentTransfer.hint": "Effects are applied permanently and have to be deleted manually. Warpgate's revert button will not be available.",
     "setting.applyIdenticalEffects.name": "Apply identical effects",
     "setting.applyIdenticalEffects.hint": "Effects with the same name as an already present effect will be applied regardless.",
+    "setting.overrideOrigin.name": "Override origin",
+    "setting.overrideOrigin.hint": "If enabled, the displayed source field will be modified to appropriately refer to the item from which the effect was transferred.",
     "ET.applyEffect.defaultName": "Unknown Item"
 }
