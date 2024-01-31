@@ -1,5 +1,5 @@
 .effective-transferral.transfer-app {
-  height: auto !important;
+  height: auto;
 }
 
 .effective-transferral.transfer-app .instruction {
@@ -37,4 +37,11 @@
 .effective-transferral.transfer-app .specifics {
   display: flex;
   gap: 0.4em;
+}
+
+.effective-transferral.transfer-app form:not(:has(.effect input[data-type=target]:checked)) .buttons [data-type=TARGET],
+.effective-transferral.transfer-app form:not(:has(.effect input[data-type=self]:checked)) .buttons [data-type=SELF],
+.effective-transferral.transfer-app form:not(:has(.effect input[data-type]:checked)) .buttons [data-type=ALL] {
+  pointer-events: none;
+  color: gray;
 }

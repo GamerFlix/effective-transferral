@@ -1,13 +1,13 @@
 import {MODULE} from "../module.mjs";
 
-export class EffectTransferApp extends FormApplication {
+export class EffectTransferApp extends Application {
   /**
    * @constructor
    * @param {Item} item           The item transferring effects.
    * @param {object} options      Standard FormApplication options.
    */
   constructor(item, options = {}) {
-    super(item, options);
+    super(options);
     this.item = item ?? null;
     this.itemName = item?.name ?? game.i18n.format("ET.applyEffect.defaultName");
     this.actor = options.actor;
@@ -17,13 +17,14 @@ export class EffectTransferApp extends FormApplication {
     this.self = options.tokenDoc ?? options.actor ?? false;
   }
 
+  /** @override */
   get id() {
     return `${MODULE.id}-transfer-app-${this.item?.id}`;
   }
 
+  /** @override */
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
-      closeOnSubmit: true,
       classes: [MODULE.id, "transfer-app"],
       width: 400,
       template: `modules/${MODULE.id}/templates/TransferApp.hbs`,
@@ -31,6 +32,7 @@ export class EffectTransferApp extends FormApplication {
     });
   }
 
+  /** @override */
   get title() {
     return game.i18n.format("ET.Dialog.Title", {name: this.itemName});
   }
@@ -54,6 +56,14 @@ export class EffectTransferApp extends FormApplication {
     return data;
   }
 
+  /** @override */
+  activateListeners(html) {
+    super.activateListeners(html);
+    html[0].querySelectorAll(".buttons button[data-type]").forEach(button => {
+      button.addEventListener("click", this.finalize.bind(this));
+    });
+  }
+
   /**
    * If the name of the mutation is not unique, append a number to it.
    * @param {TokenDocument} tokenDoc      The token document that is the target of the mutation.
@@ -72,13 +82,19 @@ export class EffectTransferApp extends FormApplication {
     return name;
   }
 
-  /** @override */
-  async _updateObject(event, formData) {
-    const button = event.submitter;
-    const type = button.dataset.type;
+  /**
+   * Finalize transfer of effects using chosen parameters.
+   * @param {Event} event     Initiating click event.
+   */
+  async finalize(event) {
+    const type = event.currentTarget.dataset.type; // ALL, SELF, or TARGET
 
     const acc = {self: [], target: []};
-    this.form.querySelectorAll("[data-type]:checked").forEach(box => acc[box.dataset.type].push(box.dataset.id));
+    event.currentTarget.closest("FORM").querySelectorAll(".effect input[data-type]:checked").forEach(box => {
+      acc[box.dataset.type].push(box.dataset.id);
+    });
+
+    this.close();
 
     if (["ALL", "SELF"].includes(type)) await this.applyToSelf(this.packageEffects(acc.self));
     if (["ALL", "TARGET"].includes(type)) await this.applyToTargets(this.packageEffects(acc.target));
